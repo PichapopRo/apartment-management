@@ -5,11 +5,12 @@ pydantic
 pydantic-settings
 SQLAlchemy
 alembic
-passlib[bcrypt]
+passlib[argon2]
 python-jose[cryptography]
 python-multipart
 email-validator
 psycopg[binary]
+pwdlib[argon2]
 
 # Utilities
 python-dateutil
@@ -21,4 +22,3 @@ openpyxl
 
 # PDF receipts
 reportlab
-
