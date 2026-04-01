@@ -9,8 +9,8 @@ class UserService:
     def __init__(self, db: Session) -> None:
         self.repo = UserRepository(db)
 
-    def authenticate(self, email: str, password: str) -> User | None:
-        user = self.repo.get_by_email(email)
+    def authenticate(self, username: str, password: str) -> User | None:
+        user = self.repo.get_by_username(username)
         if user is None or not user.is_active:
             return None
         if not verify_password(password, user.hashed_password):
@@ -18,9 +18,15 @@ class UserService:
         return user
 
     def create_user(
-        self, email: str, password: str, full_name: str | None, role: UserRole
+        self,
+        username: str,
+        email: str,
+        password: str,
+        full_name: str | None,
+        role: UserRole,
     ) -> User:
         user = User(
+            username=username.lower(),
             email=email.lower(),
             full_name=full_name,
             hashed_password=hash_password(password),

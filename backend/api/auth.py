@@ -19,7 +19,7 @@ def login(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect username or password",
         )
     token = create_access_token({"sub": str(user.id)})
     return Token(access_token=token)
@@ -28,6 +28,8 @@ def login(
 @router.post("/register", response_model=UserOut)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
     service = UserService(db)
+    if service.repo.get_by_username(payload.username):
+        raise HTTPException(status_code=400, detail="Username already taken")
     if service.repo.get_by_email(payload.email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -39,6 +41,7 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="First user must be admin")
 
     return service.create_user(
+        username=payload.username,
         email=payload.email,
         password=payload.password,
         full_name=payload.full_name,
@@ -54,9 +57,12 @@ def me(user=Depends(get_current_user)):
 @router.post("/users", response_model=UserOut, dependencies=[Depends(require_roles(UserRole.ADMIN))])
 def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     service = UserService(db)
+    if service.repo.get_by_username(payload.username):
+        raise HTTPException(status_code=400, detail="Username already taken")
     if service.repo.get_by_email(payload.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     return service.create_user(
+        username=payload.username,
         email=payload.email,
         password=payload.password,
         full_name=payload.full_name,
