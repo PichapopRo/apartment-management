@@ -17,24 +17,36 @@ class TenancyService:
         self.tenancies = TenancyRepository(db)
         self.users = UserRepository(db)
 
-    def assign_resident(self, room_id: int, resident_user_id: int, move_in: date) -> Tenancy:
+    def assign_resident(
+        self,
+        room_id: int,
+        resident_user_id: int | None,
+        resident_name: str | None,
+        move_in: date,
+    ) -> Tenancy:
         room = self.rooms.get_by_id(room_id)
         if room is None:
             raise ValueError("Room not found")
 
-        resident = self.users.get_by_id(resident_user_id)
-        if resident is None or resident.role != UserRole.RESIDENT.value:
-            raise ValueError("Resident not found")
+        if resident_user_id is None and not resident_name:
+            raise ValueError("Resident name or resident user id is required")
+
+        resident = None
+        if resident_user_id is not None:
+            resident = self.users.get_by_id(resident_user_id)
+            if resident is None or resident.role != UserRole.RESIDENT.value:
+                raise ValueError("Resident not found")
 
         if self.tenancies.get_active_by_room(room_id):
             raise ValueError("Room already occupied")
 
-        if self.tenancies.get_active_by_resident(resident_user_id):
+        if resident_user_id is not None and self.tenancies.get_active_by_resident(resident_user_id):
             raise ValueError("Resident already assigned to a room")
 
         tenancy = Tenancy(
             room_id=room_id,
             resident_user_id=resident_user_id,
+            resident_name=resident_name,
             move_in_date=move_in,
             is_active=True,
         )

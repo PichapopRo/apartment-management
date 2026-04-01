@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, func
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -9,7 +9,8 @@ class Tenancy(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
-    resident_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    resident_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    resident_name = Column(String(255), nullable=True)
     move_in_date = Column(Date, nullable=False)
     move_out_date = Column(Date, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)

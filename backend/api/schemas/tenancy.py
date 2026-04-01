@@ -6,7 +6,8 @@ from pydantic import BaseModel
 
 class TenancyAssign(BaseModel):
     room_id: int
-    resident_user_id: int
+    resident_user_id: Optional[int] = None
+    resident_name: Optional[str] = None
     move_in_date: date
 
 
@@ -17,7 +18,7 @@ class TenancyMoveOut(BaseModel):
 class TenancyOut(BaseModel):
     id: int
     room_id: int
-    resident_user_id: int
+    resident_user_id: Optional[int] = None
     resident_name: Optional[str] = None
     move_in_date: date
     move_out_date: Optional[date] = None

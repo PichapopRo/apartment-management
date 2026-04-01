@@ -13,7 +13,7 @@ router = APIRouter(prefix="/tenancies", tags=["tenancies"])
     "/assign",
     response_model=TenancyOut,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_roles(UserRole.ADMIN))],
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
 )
 def assign_tenancy(payload: TenancyAssign, db: Session = Depends(get_db)):
     service = TenancyService(db)
@@ -21,12 +21,13 @@ def assign_tenancy(payload: TenancyAssign, db: Session = Depends(get_db)):
         tenancy = service.assign_resident(
             room_id=payload.room_id,
             resident_user_id=payload.resident_user_id,
+            resident_name=payload.resident_name,
             move_in=payload.move_in_date,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    resident_name = tenancy.resident.full_name if tenancy.resident else None
+    resident_name = tenancy.resident_name or (tenancy.resident.full_name if tenancy.resident else None)
     return TenancyOut(
         id=tenancy.id,
         room_id=tenancy.room_id,
@@ -41,7 +42,7 @@ def assign_tenancy(payload: TenancyAssign, db: Session = Depends(get_db)):
 @router.post(
     "/{tenancy_id}/move-out",
     response_model=TenancyOut,
-    dependencies=[Depends(require_roles(UserRole.ADMIN))],
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
 )
 def move_out(tenancy_id: int, payload: TenancyMoveOut, db: Session = Depends(get_db)):
     service = TenancyService(db)
@@ -50,7 +51,7 @@ def move_out(tenancy_id: int, payload: TenancyMoveOut, db: Session = Depends(get
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    resident_name = tenancy.resident.full_name if tenancy.resident else None
+    resident_name = tenancy.resident_name or (tenancy.resident.full_name if tenancy.resident else None)
     return TenancyOut(
         id=tenancy.id,
         room_id=tenancy.room_id,
