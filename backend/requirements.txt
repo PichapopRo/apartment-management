@@ -1,0 +1,24 @@
+﻿fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+pydantic-settings
+SQLAlchemy
+alembic
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+email-validator
+psycopg[binary]
+
+# Utilities
+python-dateutil
+pytz
+
+# Reporting / exports
+pandas
+openpyxl
+
+# PDF receipts
+reportlab
+
