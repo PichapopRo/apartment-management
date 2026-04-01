@@ -37,3 +37,7 @@ class UserService:
 
     def users_count(self) -> int:
         return self.repo.count()
+
+    def set_citizen_id_image(self, user: User, path: str) -> User:
+        user.citizen_id_image_path = path
+        return self.repo.update(user)
