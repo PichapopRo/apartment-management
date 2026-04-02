@@ -11,6 +11,7 @@ python-multipart
 email-validator
 psycopg[binary]
 pwdlib[argon2]
+pytest
 
 # Utilities
 python-dateutil
