@@ -12,11 +12,21 @@ class RoomService:
         self.db = db
         self.repo = RoomRepository(db)
 
-    def create_room(self, room_number: str, floor: int | None, rent_rate, status: RoomStatus) -> Room:
+    def create_room(
+        self,
+        room_number: str,
+        floor: int | None,
+        rent_rate,
+        water_rate,
+        electric_rate,
+        status: RoomStatus,
+    ) -> Room:
         room = Room(
             room_number=room_number,
             floor=floor,
             rent_rate=rent_rate,
+            water_rate=water_rate,
+            electric_rate=electric_rate,
             status=status.value,
         )
         return self.repo.create(room)
@@ -26,12 +36,18 @@ class RoomService:
         room: Room,
         floor: int | None = None,
         rent_rate=None,
+        water_rate=None,
+        electric_rate=None,
         status: RoomStatus | None = None,
     ) -> Room:
         if floor is not None:
             room.floor = floor
         if rent_rate is not None:
             room.rent_rate = rent_rate
+        if water_rate is not None:
+            room.water_rate = water_rate
+        if electric_rate is not None:
+            room.electric_rate = electric_rate
         if status is not None:
             room.status = status.value
         return self.repo.update(room)

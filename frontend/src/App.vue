@@ -26,7 +26,7 @@ const logout = () => {
     <div class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_#f8fafc_0%,_#e2e8f0_45%,_#cbd5f5_100%)]" />
 
     <aside v-if="!isPublic" class="flex flex-col gap-5 bg-gradient-to-b from-slate-900 to-slate-800 px-6 py-7 text-slate-50">
-      <div class="text-[22px] font-semibold">ApartManage</div>
+      <div class="text-[22px] font-semibold">MK House</div>
       <div class="text-[11px] uppercase tracking-[0.22em] text-slate-400">Operations Console</div>
 
       <div class="self-start rounded-full bg-slate-800/80 px-3 py-1 text-[11px] uppercase tracking-[0.2em]">
