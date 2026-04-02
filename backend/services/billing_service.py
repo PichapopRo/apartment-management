@@ -7,6 +7,7 @@ from model.bill import Bill
 from model.meter_reading import MeterReading
 from model.room import Room
 from repository.bill_repository import BillRepository
+from repository.billing_config_repository import BillingConfigRepository
 from repository.meter_reading_repository import MeterReadingRepository
 from repository.room_repository import RoomRepository
 
@@ -29,6 +30,7 @@ class BillingService:
         self.rooms = RoomRepository(db)
         self.readings = MeterReadingRepository(db)
         self.bills = BillRepository(db)
+        self.configs = BillingConfigRepository(db)
 
     def calculate_bill(
         self,
@@ -36,8 +38,10 @@ class BillingService:
         current: MeterReading,
         previous: MeterReading | None,
         late_fee_applied: bool,
-        garbage_fee: Decimal = Decimal("30.00"),
-        late_fee_amount: Decimal = Decimal("300.00"),
+        water_rate: Decimal,
+        electric_rate: Decimal,
+        garbage_fee: Decimal,
+        late_fee_amount: Decimal,
     ) -> BillCalculation:
         water_units = Decimal(current.water_value) - Decimal(previous.water_value if previous else 0)
         electric_units = Decimal(current.electric_value) - Decimal(
@@ -47,8 +51,8 @@ class BillingService:
         if water_units < 0 or electric_units < 0:
             raise ValueError("Meter reading cannot be less than previous month")
 
-        water_amount = water_units * Decimal(room.water_rate)
-        electric_amount = electric_units * Decimal(room.electric_rate)
+        water_amount = water_units * Decimal(water_rate)
+        electric_amount = electric_units * Decimal(electric_rate)
         rent_amount = Decimal(room.rent_rate)
         late_fee = late_fee_amount if late_fee_applied else Decimal("0.00")
 
@@ -92,7 +96,17 @@ class BillingService:
             prev_key = f"{y:04d}-{m-1:02d}"
         previous = self.readings.get_by_room_month(room_id, prev_key)
 
-        calc = self.calculate_bill(room, current, previous, late_fee_applied)
+        config = self.configs.get_config()
+        calc = self.calculate_bill(
+            room,
+            current,
+            previous,
+            late_fee_applied,
+            water_rate=Decimal(config.water_rate),
+            electric_rate=Decimal(config.electric_rate),
+            garbage_fee=Decimal(config.garbage_fee),
+            late_fee_amount=Decimal(config.late_fee),
+        )
 
         bill = Bill(
             room_id=room_id,

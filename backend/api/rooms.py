@@ -30,8 +30,6 @@ def list_rooms(db: Session = Depends(get_db)):
                 room_number=room.room_number,
                 floor=room.floor,
                 rent_rate=room.rent_rate,
-                water_rate=room.water_rate,
-                electric_rate=room.electric_rate,
                 status=room.status,
                 current_resident_name=item["resident_name"],
             )
@@ -58,8 +56,6 @@ def create_room(payload: RoomCreate, db: Session = Depends(get_db)):
         room_number=payload.room_number,
         floor=payload.floor,
         rent_rate=payload.rent_rate,
-        water_rate=payload.water_rate,
-        electric_rate=payload.electric_rate,
         status=payload.status,
     )
     return RoomOut(
@@ -67,8 +63,6 @@ def create_room(payload: RoomCreate, db: Session = Depends(get_db)):
         room_number=room.room_number,
         floor=room.floor,
         rent_rate=room.rent_rate,
-        water_rate=room.water_rate,
-        electric_rate=room.electric_rate,
         status=room.status,
         current_resident_name=None,
     )
@@ -84,8 +78,6 @@ def update_room(room_id: int, payload: RoomUpdate, db: Session = Depends(get_db)
         room=room,
         floor=payload.floor,
         rent_rate=payload.rent_rate,
-        water_rate=payload.water_rate,
-        electric_rate=payload.electric_rate,
         status=payload.status,
     )
     return RoomOut(
@@ -93,8 +85,6 @@ def update_room(room_id: int, payload: RoomUpdate, db: Session = Depends(get_db)
         room_number=room.room_number,
         floor=room.floor,
         rent_rate=room.rent_rate,
-        water_rate=room.water_rate,
-        electric_rate=room.electric_rate,
         status=room.status,
         current_resident_name=None,
     )

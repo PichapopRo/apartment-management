@@ -32,3 +32,20 @@ class BillOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class BillingConfigOut(BaseModel):
+    water_rate: Decimal
+    electric_rate: Decimal
+    garbage_fee: Decimal
+    late_fee: Decimal
+
+    class Config:
+        from_attributes = True
+
+
+class BillingConfigUpdate(BaseModel):
+    water_rate: Decimal = Field(ge=0)
+    electric_rate: Decimal = Field(ge=0)
+    garbage_fee: Decimal = Field(ge=0)
+    late_fee: Decimal = Field(ge=0)
