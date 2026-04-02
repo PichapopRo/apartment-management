@@ -7,6 +7,10 @@ from sqlalchemy.orm import Session
 from api.schemas.room import RoomCreate, RoomOut, RoomPublic, RoomUpdate
 from model.room_document import RoomDocumentType
 from model.user import UserRole
+from model.bill import Bill
+from model.meter_reading import MeterReading
+from model.room_document import RoomDocument
+from model.tenancy import Tenancy
 from repository.room_document_repository import RoomDocumentRepository
 from repository.room_repository import RoomRepository
 from services.room_document_service import RoomDocumentService
@@ -96,6 +100,15 @@ def delete_room(room_id: int, db: Session = Depends(get_db)):
     room = repo.get_by_id(room_id)
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
+    has_tenancy = db.query(Tenancy).filter(Tenancy.room_id == room_id).first()
+    has_docs = db.query(RoomDocument).filter(RoomDocument.room_id == room_id).first()
+    has_readings = db.query(MeterReading).filter(MeterReading.room_id == room_id).first()
+    has_bills = db.query(Bill).filter(Bill.room_id == room_id).first()
+    if has_tenancy or has_docs or has_readings or has_bills:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete room with related records (tenancy, documents, readings, or bills)",
+        )
     repo.delete(room)
     return None
 

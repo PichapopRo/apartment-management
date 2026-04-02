@@ -217,7 +217,7 @@ const submitUpload = async () => {
         :key="room.id"
         :room-number="room.room_number"
         :floor="room.floor"
-        :rent-rate="room.rent_rate"
+        :rent-rate="Number(room.rent_rate ?? 0)"
         :status="room.status"
         :resident-name="room.current_resident_name"
         :show-details="!isResident"

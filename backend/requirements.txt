@@ -21,6 +21,7 @@ pytz
 # Reporting / exports
 pandas
 openpyxl
+xlrd
 
 # PDF receipts
 reportlab
