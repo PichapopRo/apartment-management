@@ -90,6 +90,16 @@ def update_room(room_id: int, payload: RoomUpdate, db: Session = Depends(get_db)
     )
 
 
+@router.delete("/{room_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_roles(UserRole.ADMIN))])
+def delete_room(room_id: int, db: Session = Depends(get_db)):
+    repo = RoomRepository(db)
+    room = repo.get_by_id(room_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    repo.delete(room)
+    return None
+
+
 @router.post(
     "/{room_id}/documents/citizen-id",
     status_code=status.HTTP_201_CREATED,

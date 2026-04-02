@@ -30,7 +30,6 @@ def _set_test_env():
 
 @pytest.fixture()
 def client():
-    # Import after env is set
     from database import Base, engine
     from main import app
 

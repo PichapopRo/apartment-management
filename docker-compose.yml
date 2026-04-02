@@ -15,8 +15,6 @@ services:
     build:
       context: ./backend
     container_name: apartment_backend
-    environment:
-      DATABASE_URL: postgresql+psycopg://app:app@db:5432/apartment
     depends_on:
       - db
     ports:
@@ -24,6 +22,9 @@ services:
     volumes:
       - ./backend:/app
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://app:app@db:5432/apartment
+      WATCHFILES_FORCE_POLLING: "true"
 
   frontend:
     build:
@@ -31,6 +32,8 @@ services:
     container_name: apartment_frontend
     environment:
       VITE_API_URL: http://localhost:8000
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "200"
     ports:
       - "5173:5173"
     volumes:

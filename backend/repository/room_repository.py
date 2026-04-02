@@ -26,3 +26,7 @@ class RoomRepository:
         self.db.commit()
         self.db.refresh(room)
         return room
+
+    def delete(self, room: Room) -> None:
+        self.db.delete(room)
+        self.db.commit()

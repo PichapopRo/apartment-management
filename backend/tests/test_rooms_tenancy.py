@@ -64,6 +64,15 @@ def test_room_create_admin_only_and_public_list(client):
     res = client.get("/rooms", headers={"Authorization": f"Bearer {resident_token}"})
     assert res.status_code == 403
 
+    # Admin can delete room
+    room_id = res = client.post(
+        "/rooms",
+        json={"room_number": "A103", "floor": 1, "rent_rate": 5000, "status": "vacant"},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    ).json()["id"]
+    del_res = client.delete(f"/rooms/{room_id}", headers={"Authorization": f"Bearer {admin_token}"})
+    assert del_res.status_code == 204
+
 
 def test_staff_can_assign_tenancy_with_name_only(client):
     _bootstrap_admin(client)
