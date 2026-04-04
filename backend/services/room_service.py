@@ -44,7 +44,7 @@ class RoomService:
 
     def list_rooms_with_active_resident(self) -> list[dict]:
         stmt = (
-            select(Room, Tenancy.resident_name, User.full_name)
+            select(Room, Tenancy.resident_name, Tenancy.tenant_phone, User.full_name)
             .select_from(Room)
             .join(Tenancy, (Tenancy.room_id == Room.id) & (Tenancy.is_active.is_(True)), isouter=True)
             .join(User, User.id == Tenancy.resident_user_id, isouter=True)
@@ -52,7 +52,9 @@ class RoomService:
         )
         rows = self.db.execute(stmt).all()
         result = []
-        for room, tenancy_name, user_name in rows:
+        for room, tenancy_name, tenancy_phone, user_name in rows:
             resident_name = tenancy_name or user_name
-            result.append({"room": room, "resident_name": resident_name})
+            result.append(
+                {"room": room, "resident_name": resident_name, "resident_phone": tenancy_phone}
+            )
         return result

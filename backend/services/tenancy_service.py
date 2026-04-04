@@ -22,6 +22,7 @@ class TenancyService:
         room_id: int,
         resident_user_id: int | None,
         resident_name: str | None,
+        tenant_phone: str | None,
         move_in: date,
     ) -> Tenancy:
         room = self.rooms.get_by_id(room_id)
@@ -47,6 +48,7 @@ class TenancyService:
             room_id=room_id,
             resident_user_id=resident_user_id,
             resident_name=resident_name,
+            tenant_phone=tenant_phone,
             move_in_date=move_in,
             is_active=True,
         )
@@ -56,6 +58,18 @@ class TenancyService:
         self.rooms.update(room)
 
         return tenancy
+
+    def update_active_tenancy(
+        self, room_id: int, resident_name: str | None, tenant_phone: str | None
+    ) -> Tenancy:
+        tenancy = self.tenancies.get_active_by_room(room_id)
+        if tenancy is None:
+            raise ValueError("Active tenancy not found")
+        if resident_name is not None:
+            tenancy.resident_name = resident_name
+        if tenant_phone is not None:
+            tenancy.tenant_phone = tenant_phone
+        return self.tenancies.update(tenancy)
 
     def move_out(self, tenancy_id: int, move_out: date) -> Tenancy:
         tenancy = self.tenancies.get_by_id(tenancy_id)

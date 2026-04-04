@@ -50,6 +50,16 @@ def list_readings(room_id: int, limit: int = 6, db: Session = Depends(get_db)):
     return repo.list_by_room(room_id=room_id, limit=limit)
 
 
+@router.get(
+    "/readings/year",
+    response_model=list[MeterReadingOut],
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
+)
+def list_readings_by_year(room_id: int, year: int, db: Session = Depends(get_db)):
+    repo = MeterReadingRepository(db)
+    return repo.list_by_year(room_id=room_id, year=str(year))
+
+
 @router.post(
     "/bills",
     response_model=BillOut,

@@ -36,6 +36,7 @@ def list_rooms(db: Session = Depends(get_db)):
                 rent_rate=room.rent_rate,
                 status=room.status,
                 current_resident_name=item["resident_name"],
+                current_resident_phone=item.get("resident_phone"),
             )
         )
     return response

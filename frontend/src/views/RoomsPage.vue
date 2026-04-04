@@ -12,6 +12,7 @@ type Room = {
   rent_rate?: number
   status: 'vacant' | 'occupied' | 'maintenance'
   current_resident_name?: string | null
+  current_resident_phone?: string | null
 }
 
 const rooms = ref<Room[]>([])
@@ -23,13 +24,16 @@ const form = ref({
   room_number: '',
   floor: 1,
   rent_rate: 0,
-  status: 'vacant' as Room['status']
+  status: 'vacant' as Room['status'],
+  tenant_name: '',
+  tenant_phone: ''
 })
 
 const assignForm = ref({
   room_id: '',
   resident_user_id: '',
   resident_name: '',
+  tenant_phone: '',
   move_in_date: ''
 })
 
@@ -75,7 +79,7 @@ const loadRooms = async () => {
 onMounted(loadRooms)
 
 const resetRoomForm = () => {
-  form.value = { id: 0, room_number: '', floor: 1, rent_rate: 0, status: 'vacant' }
+  form.value = { id: 0, room_number: '', floor: 1, rent_rate: 0, status: 'vacant', tenant_name: '', tenant_phone: '' }
 }
 
 const submitRoom = async () => {
@@ -88,6 +92,13 @@ const submitRoom = async () => {
         status: form.value.status
       }
       await apiClient.patch(`/rooms/${form.value.id}`, payload)
+
+      if (form.value.tenant_name || form.value.tenant_phone) {
+        await apiClient.patch(`/tenancies/room/${form.value.id}`, {
+          resident_name: form.value.tenant_name || null,
+          tenant_phone: form.value.tenant_phone || null
+        })
+      }
     } else {
       await apiClient.post('/rooms', form.value)
     }
@@ -110,7 +121,9 @@ const editRoom = (room: Room) => {
     room_number: room.room_number,
     floor: room.floor ?? 1,
     rent_rate: room.rent_rate ?? 0,
-    status: room.status
+    status: room.status,
+    tenant_name: room.current_resident_name ?? '',
+    tenant_phone: room.current_resident_phone ?? ''
   }
   showRoomModal.value = true
 }
@@ -160,11 +173,18 @@ const submitAssign = async () => {
         ? Number(assignForm.value.resident_user_id)
         : null,
       resident_name: assignForm.value.resident_name || null,
+      tenant_phone: assignForm.value.tenant_phone || null,
       move_in_date: assignForm.value.move_in_date
     }
     await apiClient.post('/tenancies/assign', payload)
     showAssign.value = false
-    assignForm.value = { room_id: '', resident_user_id: '', resident_name: '', move_in_date: '' }
+    assignForm.value = {
+      room_id: '',
+      resident_user_id: '',
+      resident_name: '',
+      tenant_phone: '',
+      move_in_date: ''
+    }
     await loadRooms()
   } catch (err) {
     error.value = 'Failed to assign tenancy.'
@@ -254,6 +274,14 @@ const submitUpload = async () => {
               <option value="maintenance">Maintenance</option>
             </select>
           </label>
+          <label class="grid gap-1 text-xs font-semibold text-slate-600">
+            Tenant Name
+            <input v-model="form.tenant_name" class="rounded-xl border border-slate-200 px-3 py-2" />
+          </label>
+          <label class="grid gap-1 text-xs font-semibold text-slate-600">
+            Tenant Phone
+            <input v-model="form.tenant_phone" class="rounded-xl border border-slate-200 px-3 py-2" />
+          </label>
           <div class="flex gap-2">
             <button type="submit" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
               {{ form.id ? 'Update' : 'Create' }}
@@ -285,6 +313,10 @@ const submitUpload = async () => {
           <label class="grid gap-1 text-xs font-semibold text-slate-600">
             Resident name (optional)
             <input v-model="assignForm.resident_name" class="rounded-xl border border-slate-200 px-3 py-2" />
+          </label>
+          <label class="grid gap-1 text-xs font-semibold text-slate-600">
+            Tenant phone (optional)
+            <input v-model="assignForm.tenant_phone" class="rounded-xl border border-slate-200 px-3 py-2" />
           </label>
           <label class="grid gap-1 text-xs font-semibold text-slate-600">
             Move-in date

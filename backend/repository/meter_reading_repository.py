@@ -28,3 +28,12 @@ class MeterReadingRepository:
             .limit(limit)
             .all()
         )
+
+    def list_by_year(self, room_id: int, year: str) -> list[MeterReading]:
+        prefix = f"{year}-"
+        return (
+            self.db.query(MeterReading)
+            .filter(MeterReading.room_id == room_id, MeterReading.billing_month.like(prefix + "%"))
+            .order_by(MeterReading.billing_month.asc())
+            .all()
+        )

@@ -55,6 +55,13 @@ const logout = () => {
         >
           Meters
         </RouterLink>
+        <RouterLink
+          to="/meters/yearly"
+          class="rounded-xl border border-slate-700 px-3 py-2 text-sm transition hover:-translate-y-0.5 hover:border-slate-400"
+          active-class="bg-slate-800/80 border-slate-300"
+        >
+          Yearly Meters
+        </RouterLink>
       </nav>
 
       <div class="mt-auto rounded-xl border border-slate-800 bg-slate-800/70 p-3 text-xs">

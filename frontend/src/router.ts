@@ -5,6 +5,7 @@ import LoginPage from './views/LoginPage.vue'
 import RegisterPage from './views/RegisterPage.vue'
 import RoomsPage from './views/RoomsPage.vue'
 import MeterPage from './views/MeterPage.vue'
+import MeterYearPage from './views/MeterYearPage.vue'
 import { authStore } from './stores/auth'
 
 const routes = [
@@ -13,7 +14,8 @@ const routes = [
   { path: '/register', component: RegisterPage, meta: { public: true } },
   { path: '/dashboard', component: DashboardPage },
   { path: '/rooms', component: RoomsPage },
-  { path: '/meters', component: MeterPage }
+  { path: '/meters', component: MeterPage },
+  { path: '/meters/yearly', component: MeterYearPage }
 ]
 
 export const router = createRouter({

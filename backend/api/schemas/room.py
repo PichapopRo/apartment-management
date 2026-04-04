@@ -26,6 +26,7 @@ class RoomOut(BaseModel):
     rent_rate: Decimal
     status: RoomStatus
     current_resident_name: Optional[str] = None
+    current_resident_phone: Optional[str] = None
 
     class Config:
         from_attributes = True
