@@ -9,6 +9,17 @@ class MeterReadingCreate(BaseModel):
     electric_value: Decimal = Field(ge=0)
 
 
+class MeterReadingOut(BaseModel):
+    id: int
+    room_id: int
+    billing_month: str
+    water_value: Decimal
+    electric_value: Decimal
+
+    class Config:
+        from_attributes = True
+
+
 class BillCreate(BaseModel):
     room_id: int
     billing_month: str = Field(pattern=r"^\d{4}-\d{2}$")

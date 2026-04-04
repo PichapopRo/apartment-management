@@ -19,3 +19,12 @@ class MeterReadingRepository:
         self.db.commit()
         self.db.refresh(reading)
         return reading
+
+    def list_by_room(self, room_id: int, limit: int = 6) -> list[MeterReading]:
+        return (
+            self.db.query(MeterReading)
+            .filter(MeterReading.room_id == room_id)
+            .order_by(MeterReading.billing_month.desc())
+            .limit(limit)
+            .all()
+        )

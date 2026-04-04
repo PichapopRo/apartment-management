@@ -4,6 +4,7 @@ import DashboardPage from './views/DashboardPage.vue'
 import LoginPage from './views/LoginPage.vue'
 import RegisterPage from './views/RegisterPage.vue'
 import RoomsPage from './views/RoomsPage.vue'
+import MeterPage from './views/MeterPage.vue'
 import { authStore } from './stores/auth'
 
 const routes = [
@@ -11,7 +12,8 @@ const routes = [
   { path: '/login', component: LoginPage, meta: { public: true } },
   { path: '/register', component: RegisterPage, meta: { public: true } },
   { path: '/dashboard', component: DashboardPage },
-  { path: '/rooms', component: RoomsPage }
+  { path: '/rooms', component: RoomsPage },
+  { path: '/meters', component: MeterPage }
 ]
 
 export const router = createRouter({
