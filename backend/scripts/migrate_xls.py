@@ -140,6 +140,11 @@ def main():
         default="1-18",
         help="Room number range to import (default: 1-18)",
     )
+    parser.add_argument(
+        "--rent-sheet",
+        default="Mar 26",
+        help="Sheet name to load rent prices from (default: Mar 26)",
+    )
     args = parser.parse_args()
 
     path = Path(args.file)
@@ -172,6 +177,34 @@ def main():
                             status=RoomStatus.VACANT.value,
                         )
                     )
+
+        # update rent_rate from specified sheet (column J = index 9)
+        if args.rent_sheet in xls.sheet_names:
+            df_rent = pd.read_excel(xls, sheet_name=args.rent_sheet, header=None)
+            header_row = find_header_rows(df_rent)
+            if header_row is not None:
+                data_start = header_row + 2
+                for i in range(data_start, len(df_rent)):
+                    row = df_rent.iloc[i]
+                    room_val = row.iloc[0] if len(row) > 0 else None
+                    if pd.isna(room_val):
+                        continue
+                    try:
+                        room_int = int(str(room_val).strip())
+                    except Exception:
+                        continue
+                    room_number = f"{room_int:03d}"
+                    if room_number not in allowed_rooms:
+                        continue
+                    rent_val = row.iloc[9] if len(row) > 9 else None
+                    rent_amount = safe_decimal(rent_val)
+                    if rent_amount is None:
+                        continue
+                    room = room_repo.get_by_number(room_number)
+                    if room is None:
+                        continue
+                    room.rent_rate = rent_amount
+                db.commit()
 
         for sheet in xls.sheet_names:
             billing_month = parse_sheet_month(sheet)
