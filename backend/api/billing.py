@@ -82,7 +82,7 @@ def create_bill(payload: BillCreate, db: Session = Depends(get_db)):
 @router.get(
     "/config",
     response_model=BillingConfigOut,
-    dependencies=[Depends(require_roles(UserRole.ADMIN))],
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
 )
 def get_config(db: Session = Depends(get_db)):
     config = BillingConfigRepository(db).get_config()

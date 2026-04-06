@@ -63,6 +63,12 @@ export const apiClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     }),
+  put: <T>(path: string, data: unknown) =>
+    request<T>(path, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }),
   postForm: <T>(path: string, data: URLSearchParams) =>
     request<T>(path, {
       method: 'POST',
