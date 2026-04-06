@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field
 
@@ -44,6 +45,9 @@ class BillOut(BaseModel):
     late_fee_applied: bool
     total_amount: Decimal
     status: str
+    is_paid: bool
+    paid_at: datetime | None = None
+    remark: str | None = None
 
     class Config:
         from_attributes = True
@@ -64,3 +68,9 @@ class BillingConfigUpdate(BaseModel):
     electric_rate: Decimal = Field(ge=0)
     garbage_fee: Decimal = Field(ge=0)
     late_fee: Decimal = Field(ge=0)
+
+
+class BillUpdate(BaseModel):
+    is_paid: bool
+    paid_at: datetime | None = None
+    remark: str | None = None

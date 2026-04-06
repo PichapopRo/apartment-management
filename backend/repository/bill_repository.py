@@ -14,8 +14,16 @@ class BillRepository:
             .first()
         )
 
+    def get_by_id(self, bill_id: int) -> Bill | None:
+        return self.db.query(Bill).filter(Bill.id == bill_id).first()
+
     def create(self, bill: Bill) -> Bill:
         self.db.add(bill)
+        self.db.commit()
+        self.db.refresh(bill)
+        return bill
+
+    def update(self, bill: Bill) -> Bill:
         self.db.commit()
         self.db.refresh(bill)
         return bill

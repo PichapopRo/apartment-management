@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from api.schemas.billing import (
     BillCreate,
     BillOut,
+    BillUpdate,
     BillingConfigOut,
     BillingConfigUpdate,
     MeterReadingCreate,
@@ -13,6 +14,7 @@ from model.meter_reading import MeterReading
 from model.user import UserRole
 from repository.meter_reading_repository import MeterReadingRepository
 from services.billing_service import BillingService
+from repository.bill_repository import BillRepository
 from repository.billing_config_repository import BillingConfigRepository
 from utils.deps import get_db, require_roles
 
@@ -79,6 +81,27 @@ def create_bill(payload: BillCreate, db: Session = Depends(get_db)):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return bill
+
+
+@router.patch(
+    "/bills/{bill_id}",
+    response_model=BillOut,
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
+)
+def update_bill(bill_id: int, payload: BillUpdate, db: Session = Depends(get_db)):
+    repo = BillRepository(db)
+    bill = repo.get_by_id(bill_id)
+    if bill is None:
+        raise HTTPException(status_code=404, detail="Bill not found")
+
+    bill.is_paid = payload.is_paid
+    bill.paid_at = payload.paid_at
+    bill.remark = payload.remark
+    if bill.is_paid:
+        bill.status = "PAID"
+    elif bill.status == "PAID":
+        bill.status = "UNPAID"
+    return repo.update(bill)
 
 
 @router.get(
