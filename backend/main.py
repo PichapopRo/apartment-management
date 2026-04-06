@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-import model  # noqa: F401
+import model
 
 from api.auth import router as auth_router
 from api.billing import router as billing_router

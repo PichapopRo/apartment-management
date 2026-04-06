@@ -116,6 +116,9 @@ const selectAll = (checked: boolean) => {
   }
 }
 
+const waterOverrides = ref<Record<number, string>>({})
+const electricOverrides = ref<Record<number, string>>({})
+
 const roomRows = computed(() => {
   if (!config.value || !selectedMonth.value) return []
   const prevKey = prevMonthKey(selectedMonth.value)
@@ -128,8 +131,16 @@ const roomRows = computed(() => {
     const readings = readingsByRoom.value[room.id] || []
     const current = readings.find((r) => r.billing_month === selectedMonth.value)
     const previous = readings.find((r) => r.billing_month === prevKey)
-    const waterUnits = Number(current?.water_value || 0) - Number(previous?.water_value || 0)
-    const electricUnits = Number(current?.electric_value || 0) - Number(previous?.electric_value || 0)
+    const calcWater = Number(current?.water_value || 0) - Number(previous?.water_value || 0)
+    const calcElectric = Number(current?.electric_value || 0) - Number(previous?.electric_value || 0)
+    const overrideWater = waterOverrides.value[room.id]
+    const overrideElectric = electricOverrides.value[room.id]
+    const waterUnits = overrideWater !== undefined && overrideWater !== ''
+      ? Number(overrideWater)
+      : calcWater
+    const electricUnits = overrideElectric !== undefined && overrideElectric !== ''
+      ? Number(overrideElectric)
+      : calcElectric
     const rent = Number(room.rent_rate || 0)
     const waterAmount = Math.max(0, waterUnits) * waterRate
     const electricAmount = Math.max(0, electricUnits) * electricRate
@@ -250,6 +261,7 @@ onMounted(async () => {
               <th class="px-4 py-3">Water Amount</th>
               <th class="px-4 py-3">Electric Units</th>
               <th class="px-4 py-3">Electric Amount</th>
+              <th class="px-4 py-3">Override</th>
               <th class="px-4 py-3">Late Fee</th>
               <th class="px-4 py-3">Total</th>
             </tr>
@@ -269,6 +281,24 @@ onMounted(async () => {
               <td class="px-4 py-3">{{ room.electricUnits }}</td>
               <td class="px-4 py-3">{{ room.electricAmount }}</td>
               <td class="px-4 py-3">
+                <div class="grid gap-2">
+                  <input
+                    v-model="waterOverrides[room.id]"
+                    type="number"
+                    class="w-24 rounded-lg border border-slate-200 px-2 py-1"
+                    placeholder="Water"
+                    :disabled="room.status === 'vacant'"
+                  />
+                  <input
+                    v-model="electricOverrides[room.id]"
+                    type="number"
+                    class="w-24 rounded-lg border border-slate-200 px-2 py-1"
+                    placeholder="Electric"
+                    :disabled="room.status === 'vacant'"
+                  />
+                </div>
+              </td>
+              <td class="px-4 py-3">
                 <input
                   type="checkbox"
                   v-model="lateFees[room.id]"
@@ -282,7 +312,7 @@ onMounted(async () => {
           </tbody>
           <tfoot>
             <tr class="border-t border-slate-300 bg-slate-100">
-              <td colspan="7" class="px-4 py-3 text-right font-semibold">Grand Total</td>
+              <td colspan="8" class="px-4 py-3 text-right font-semibold">Grand Total</td>
               <td class="px-4 py-3 font-semibold">{{ grandTotal }}</td>
             </tr>
           </tfoot>
