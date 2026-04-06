@@ -13,8 +13,10 @@ class Bill(Base):
 
     rent_amount = Column(Numeric(12, 2), nullable=False, default=0)
     water_units = Column(Numeric(12, 2), nullable=False, default=0)
+    water_units_override = Column(Numeric(12, 2), nullable=True)
     water_amount = Column(Numeric(12, 2), nullable=False, default=0)
     electric_units = Column(Numeric(12, 2), nullable=False, default=0)
+    electric_units_override = Column(Numeric(12, 2), nullable=True)
     electric_amount = Column(Numeric(12, 2), nullable=False, default=0)
     garbage_fee = Column(Numeric(12, 2), nullable=False, default=30)
     late_fee = Column(Numeric(12, 2), nullable=False, default=0)

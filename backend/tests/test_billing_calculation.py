@@ -54,14 +54,20 @@ def test_bill_calculation_with_late_fee(client):
 
     bill = client.post(
         "/billing/bills",
-        json={"room_id": room["id"], "billing_month": "2026-04", "late_fee_applied": True},
+        json={
+            "room_id": room["id"],
+            "billing_month": "2026-04",
+            "late_fee_applied": True,
+            "water_units_override": 15,
+            "electric_units_override": 20,
+        },
         headers={"Authorization": f"Bearer {token}"},
     ).json()
 
-    assert float(bill["water_units"]) == 20
-    assert float(bill["electric_units"]) == 30
-    assert float(bill["water_amount"]) == 400  # 20 * 20
-    assert float(bill["electric_amount"]) == 210  # 30 * 7
+    assert float(bill["water_units"]) == 15
+    assert float(bill["electric_units"]) == 20
+    assert float(bill["water_amount"]) == 300  # 15 * 20
+    assert float(bill["electric_amount"]) == 140  # 20 * 7
     assert float(bill["garbage_fee"]) == 30
     assert float(bill["late_fee"]) == 300
-    assert float(bill["total_amount"]) == 5940
+    assert float(bill["total_amount"]) == 5270

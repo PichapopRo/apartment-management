@@ -73,6 +73,8 @@ def create_bill(payload: BillCreate, db: Session = Depends(get_db)):
             room_id=payload.room_id,
             billing_month=payload.billing_month,
             late_fee_applied=payload.late_fee_applied,
+            water_units_override=payload.water_units_override,
+            electric_units_override=payload.electric_units_override,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

@@ -24,6 +24,8 @@ class BillCreate(BaseModel):
     room_id: int
     billing_month: str = Field(pattern=r"^\d{4}-\d{2}$")
     late_fee_applied: bool = False
+    water_units_override: Decimal | None = Field(default=None, ge=0)
+    electric_units_override: Decimal | None = Field(default=None, ge=0)
 
 
 class BillOut(BaseModel):
@@ -32,8 +34,10 @@ class BillOut(BaseModel):
     billing_month: str
     rent_amount: Decimal
     water_units: Decimal
+    water_units_override: Decimal | None = None
     water_amount: Decimal
     electric_units: Decimal
+    electric_units_override: Decimal | None = None
     electric_amount: Decimal
     garbage_fee: Decimal
     late_fee: Decimal

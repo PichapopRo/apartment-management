@@ -42,10 +42,19 @@ class BillingService:
         electric_rate: Decimal,
         garbage_fee: Decimal,
         late_fee_amount: Decimal,
+        water_units_override: Decimal | None = None,
+        electric_units_override: Decimal | None = None,
     ) -> BillCalculation:
-        water_units = Decimal(current.water_value) - Decimal(previous.water_value if previous else 0)
-        electric_units = Decimal(current.electric_value) - Decimal(
+        water_units_calc = Decimal(current.water_value) - Decimal(
+            previous.water_value if previous else 0
+        )
+        electric_units_calc = Decimal(current.electric_value) - Decimal(
             previous.electric_value if previous else 0
+        )
+
+        water_units = water_units_override if water_units_override is not None else water_units_calc
+        electric_units = (
+            electric_units_override if electric_units_override is not None else electric_units_calc
         )
 
         if water_units < 0 or electric_units < 0:
@@ -74,6 +83,8 @@ class BillingService:
         room_id: int,
         billing_month: str,
         late_fee_applied: bool,
+        water_units_override: Decimal | None = None,
+        electric_units_override: Decimal | None = None,
     ) -> Bill:
         room = self.rooms.get_by_id(room_id)
         if room is None:
@@ -106,6 +117,8 @@ class BillingService:
             electric_rate=Decimal(config.electric_rate),
             garbage_fee=Decimal(config.garbage_fee),
             late_fee_amount=Decimal(config.late_fee),
+            water_units_override=water_units_override,
+            electric_units_override=electric_units_override,
         )
 
         bill = Bill(
@@ -113,8 +126,10 @@ class BillingService:
             billing_month=billing_month,
             rent_amount=calc.rent_amount,
             water_units=calc.water_units,
+            water_units_override=water_units_override,
             water_amount=calc.water_amount,
             electric_units=calc.electric_units,
+            electric_units_override=electric_units_override,
             electric_amount=calc.electric_amount,
             garbage_fee=calc.garbage_fee,
             late_fee=calc.late_fee,
