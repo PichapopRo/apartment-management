@@ -15,6 +15,8 @@ from database import SessionLocal
 from model.meter_reading import MeterReading
 from model.room import Room, RoomStatus
 from repository.meter_reading_repository import MeterReadingRepository
+from repository.bill_repository import BillRepository
+from model.bill import Bill
 from repository.room_repository import RoomRepository
 
 
@@ -92,6 +94,9 @@ def parse_month_sheet(df: pd.DataFrame):
     water_end_col = None
     electric_start_col = None
     electric_end_col = None
+    total_col = None
+    total_cols: list[int] = []
+    garbage_col = None
 
     for col_idx, cell in enumerate(row1.tolist()):
         text = str(cell).lower()
@@ -103,6 +108,17 @@ def parse_month_sheet(df: pd.DataFrame):
             electric_rate = extract_rates(str(cell))
             electric_start_col = col_idx
             electric_end_col = col_idx + 1
+        if "total" in text and total_col is None:
+            total_cols.append(col_idx)
+        if "garbage" in text and garbage_col is None:
+            garbage_col = col_idx
+
+    if total_cols:
+        if garbage_col is not None:
+            after_garbage = [col for col in total_cols if col > garbage_col]
+            total_col = after_garbage[0] if after_garbage else total_cols[-1]
+        else:
+            total_col = total_cols[-1]
 
     data_start = header_row + 2
 
@@ -114,6 +130,7 @@ def parse_month_sheet(df: pd.DataFrame):
         "water_end_col": water_end_col,
         "electric_start_col": electric_start_col,
         "electric_end_col": electric_end_col,
+        "total_col": total_col,
     }
 
 
@@ -145,6 +162,11 @@ def main():
         default="Mar 26",
         help="Sheet name to load rent prices from (default: Mar 26)",
     )
+    parser.add_argument(
+        "--import-total",
+        action="store_true",
+        help="Import column L (Total) into bills table",
+    )
     args = parser.parse_args()
 
     path = Path(args.file)
@@ -165,6 +187,7 @@ def main():
     db = SessionLocal()
     room_repo = RoomRepository(db)
     reading_repo = MeterReadingRepository(db)
+    bill_repo = BillRepository(db)
 
     try:
         if args.create_rooms:
@@ -268,6 +291,34 @@ def main():
                         electric_value=electric_end or Decimal("0.00"),
                     )
                     reading_repo.create(reading)
+
+                    if args.import_total:
+                        total_col = meta.get("total_col")
+                        if total_col is None:
+                            total_col = 11
+                        total_val = row.iloc[total_col] if total_col < len(row) else None
+                        total_amount = safe_decimal(total_val)
+                        if total_amount is not None:
+                            existing_bill = bill_repo.get_by_room_month(room.id, billing_month)
+                            if existing_bill is None:
+                                bill = Bill(
+                                    room_id=room.id,
+                                    billing_month=billing_month,
+                                    rent_amount=Decimal("0.00"),
+                                    water_units=Decimal("0.00"),
+                                    water_amount=Decimal("0.00"),
+                                    electric_units=Decimal("0.00"),
+                                    electric_amount=Decimal("0.00"),
+                                    garbage_fee=Decimal("0.00"),
+                                    late_fee=Decimal("0.00"),
+                                    late_fee_applied=False,
+                                    total_amount=total_amount,
+                                    status="UNPAID",
+                                )
+                                bill_repo.create(bill)
+                            else:
+                                if existing_bill.total_amount is None or existing_bill.total_amount == Decimal("0.00"):
+                                    existing_bill.total_amount = total_amount
 
                 total_readings += 1
     finally:

@@ -86,7 +86,7 @@ def create_bill(payload: BillCreate, db: Session = Depends(get_db)):
 @router.patch(
     "/bills/{bill_id}",
     response_model=BillOut,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
+    dependencies=[Depends(require_roles(UserRole.ADMIN))],
 )
 def update_bill(bill_id: int, payload: BillUpdate, db: Session = Depends(get_db)):
     repo = BillRepository(db)
@@ -102,6 +102,16 @@ def update_bill(bill_id: int, payload: BillUpdate, db: Session = Depends(get_db)
     elif bill.status == "PAID":
         bill.status = "UNPAID"
     return repo.update(bill)
+
+
+@router.get(
+    "/bills",
+    response_model=list[BillOut],
+    dependencies=[Depends(require_roles(UserRole.ADMIN))],
+)
+def list_bills(month: str, room_id: int | None = None, db: Session = Depends(get_db)):
+    repo = BillRepository(db)
+    return repo.list_by_month(billing_month=month, room_id=room_id)
 
 
 @router.get(
