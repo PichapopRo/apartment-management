@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 
 from api.schemas.billing import (
     BillCreate,
+    BillBulkCreate,
+    BillBulkResult,
     BillOut,
     BillUpdate,
     BillingConfigOut,
@@ -81,6 +83,37 @@ def create_bill(payload: BillCreate, db: Session = Depends(get_db)):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return bill
+
+
+@router.post(
+    "/bills/bulk",
+    response_model=BillBulkResult,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
+)
+def create_bills_bulk(payload: BillBulkCreate, db: Session = Depends(get_db)):
+    service = BillingService(db)
+    created: list[BillOut] = []
+    skipped: list[dict] = []
+    for item in payload.items:
+        try:
+            bill = service.create_bill_for_month(
+                room_id=item.room_id,
+                billing_month=item.billing_month,
+                late_fee_applied=item.late_fee_applied,
+                water_units_override=item.water_units_override,
+                electric_units_override=item.electric_units_override,
+            )
+            created.append(bill)
+        except ValueError as exc:
+            skipped.append(
+                {
+                    "room_id": item.room_id,
+                    "billing_month": item.billing_month,
+                    "reason": str(exc),
+                }
+            )
+    return {"created": created, "skipped": skipped}
 
 
 @router.patch(

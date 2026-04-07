@@ -53,6 +53,15 @@ class BillOut(BaseModel):
         from_attributes = True
 
 
+class BillBulkCreate(BaseModel):
+    items: list[BillCreate]
+
+
+class BillBulkResult(BaseModel):
+    created: list[BillOut]
+    skipped: list[dict]
+
+
 class BillingConfigOut(BaseModel):
     water_rate: Decimal
     electric_rate: Decimal

@@ -39,6 +39,8 @@ const lateFees = ref<Record<number, boolean>>({})
 const readingsByRoom = ref<Record<number, Reading[]>>({})
 const error = ref('')
 const loading = ref(false)
+const saving = ref(false)
+const saveMessage = ref('')
 
 const canAccess = computed(() => {
   const role = authStore.user.value?.role
@@ -167,6 +169,43 @@ const grandTotal = computed(() => {
   }, 0)
 })
 
+const saveBills = async () => {
+  if (!selectedMonth.value) {
+    error.value = 'Please select a month first.'
+    return
+  }
+  const selected = roomRows.value.filter((room) => selectedRooms.value[room.id])
+  if (!selected.length) {
+    error.value = 'Please select at least one room.'
+    return
+  }
+  saving.value = true
+  error.value = ''
+  saveMessage.value = ''
+  try {
+    const items = selected.map((room) => {
+      const overrideWater = waterOverrides.value[room.id]
+      const overrideElectric = electricOverrides.value[room.id]
+      return {
+        room_id: room.id,
+        billing_month: selectedMonth.value,
+        late_fee_applied: !!lateFees.value[room.id],
+        water_units_override: overrideWater !== undefined && overrideWater !== '' ? Number(overrideWater) : null,
+        electric_units_override: overrideElectric !== undefined && overrideElectric !== '' ? Number(overrideElectric) : null
+      }
+    })
+    const result = await apiClient.post<{
+      created: unknown[]
+      skipped: { room_id: number; billing_month: string; reason: string }[]
+    }>('/billing/bills/bulk', { items })
+    saveMessage.value = `Saved ${result.created.length} bill(s).`
+  } catch (err) {
+    error.value = 'Failed to save bills.'
+  } finally {
+    saving.value = false
+  }
+}
+
 onMounted(async () => {
   await loadData()
 })
@@ -197,6 +236,13 @@ onMounted(async () => {
           @change="loadReadingsForMonth"
         />
         <button
+          class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+          :disabled="saving"
+          @click="saveBills"
+        >
+          Save & Print
+        </button>
+        <button
           class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
           @click="selectAll(true)"
         >
@@ -214,6 +260,7 @@ onMounted(async () => {
     <div v-if="!canAccess" class="text-sm text-rose-600">You don’t have access to this page.</div>
     <div v-else>
       <div v-if="error" class="text-xs text-rose-600">{{ error }}</div>
+      <div v-if="saveMessage" class="text-xs text-emerald-600">{{ saveMessage }}</div>
       <div v-if="loading" class="text-xs text-slate-500">Loading...</div>
 
       <div v-if="isAdmin && showRateEdit" class="fixed inset-0 z-10 grid place-items-center bg-slate-900/40">
