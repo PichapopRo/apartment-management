@@ -194,13 +194,31 @@ const saveBills = async () => {
         electric_units_override: overrideElectric !== undefined && overrideElectric !== '' ? Number(overrideElectric) : null
       }
     })
-    const result = await apiClient.post<{
-      created: unknown[]
-      skipped: { room_id: number; billing_month: string; reason: string }[]
-    }>('/billing/bills/bulk', { items })
-    saveMessage.value = `Saved ${result.created.length} bill(s).`
+    await apiClient.post('/billing/bills/bulk', { items })
+
+    const bills = await Promise.all(
+      selected.map(async (room) => {
+        const result = await apiClient.get<any[]>(
+          `/billing/bills?room_id=${room.id}&month=${selectedMonth.value}`
+        )
+        return result[0] || null
+      })
+    )
+    const billIds = bills.filter(Boolean).map((bill: any) => bill.id)
+    if (billIds.length) {
+      const blob = await apiClient.postBlob('/receipts/bulk/pdf', { bill_ids: billIds })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `receipts-${selectedMonth.value}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    }
+    saveMessage.value = 'Saved bills and generated receipts.'
   } catch (err) {
-    error.value = 'Failed to save bills.'
+    error.value = 'Failed to save bills or generate receipts.'
   } finally {
     saving.value = false
   }

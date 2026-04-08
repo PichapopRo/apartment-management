@@ -45,6 +45,23 @@ const requestBlob = async (path: string) => {
   return res.blob()
 }
 
+const requestBlobPost = async (path: string, data: unknown) => {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (authStore.token.value) {
+    headers.Authorization = `Bearer ${authStore.token.value}`
+  }
+  const res = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data)
+  })
+  if (!res.ok) {
+    const errorText = await res.text()
+    throw new Error(errorText || `Request failed with ${res.status}`)
+  }
+  return res.blob()
+}
+
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data: unknown) =>
@@ -76,6 +93,7 @@ export const apiClient = {
       body: data.toString()
     }),
   getBlob: (path: string) => requestBlob(path),
+  postBlob: (path: string, data: unknown) => requestBlobPost(path, data),
   postFile: <T>(path: string, formData: FormData) =>
     request<T>(path, {
       method: 'POST',
