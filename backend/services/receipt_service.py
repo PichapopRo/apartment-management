@@ -194,15 +194,15 @@ class ReceiptService:
         title = "RECEIPT VOUCHER - COPY" if is_copy else "RECEIPT VOUCHER"
         text_center(left + usable_w / 2, y(1), title, 12, bold=True)
 
-        # Right header info: Room / Date
+        # Right header info aligned with left info block
         label_x = left + usable_w * 0.62
         value_x = left + usable_w
 
-        text_left(label_x, y(2), "Room:", 10)
-        text_right(value_x, y(2), room_number, 10)
+        text_left(label_x, y(3), "Room:", 10)
+        text_right(value_x, y(3), room_number, 10)
 
-        text_left(label_x, y(3), "Date:", 10)
-        text_right(value_x, y(3), date_text, 10)
+        text_left(label_x, y(4), "Date:", 10)
+        text_right(value_x, y(4), date_text, 10)
 
         # ===== Received from / Payment / Amount =====
         text_left(left, y(3), "Received from:", 10)
