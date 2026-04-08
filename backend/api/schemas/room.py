@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from model.room import RoomStatus
 
@@ -27,9 +27,7 @@ class RoomOut(BaseModel):
     status: RoomStatus
     current_resident_name: Optional[str] = None
     current_resident_phone: Optional[str] = None
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RoomPublic(BaseModel):

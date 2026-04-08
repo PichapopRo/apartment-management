@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TenancyAssign(BaseModel):
@@ -30,6 +30,4 @@ class TenancyOut(BaseModel):
 class TenancyUpdate(BaseModel):
     resident_name: Optional[str] = None
     tenant_phone: Optional[str] = None
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

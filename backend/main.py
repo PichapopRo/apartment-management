@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+
 from fastapi.middleware.cors import CORSMiddleware
 
 import model
@@ -12,8 +14,16 @@ from database import Base, engine
 from utils.storage import ensure_upload_dir
 
 
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ensure_upload_dir()
+    Base.metadata.create_all(bind=engine)
+    yield
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="Apartment Management API")
+    app = FastAPI(title="Apartment Management API", lifespan=lifespan)
 
     app.add_middleware(
         CORSMiddleware,
@@ -32,9 +42,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    ensure_upload_dir()
-    Base.metadata.create_all(bind=engine)

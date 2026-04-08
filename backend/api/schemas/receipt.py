@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ReceiptIssue(BaseModel):
@@ -18,9 +18,7 @@ class ReceiptOut(BaseModel):
     status: str
     voided_at: datetime | None = None
     void_reason: str | None = None
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReceiptBulkPdf(BaseModel):

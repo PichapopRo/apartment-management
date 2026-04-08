@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class MeterReadingCreate(BaseModel):
@@ -16,9 +16,7 @@ class MeterReadingOut(BaseModel):
     billing_month: str
     water_value: Decimal
     electric_value: Decimal
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BillCreate(BaseModel):
@@ -48,9 +46,7 @@ class BillOut(BaseModel):
     is_paid: bool
     paid_at: datetime | None = None
     remark: str | None = None
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BillBulkCreate(BaseModel):
@@ -67,9 +63,7 @@ class BillingConfigOut(BaseModel):
     electric_rate: Decimal
     garbage_fee: Decimal
     late_fee: Decimal
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BillingConfigUpdate(BaseModel):

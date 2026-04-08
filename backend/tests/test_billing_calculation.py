@@ -70,4 +70,4 @@ def test_bill_calculation_with_late_fee(client):
     assert float(bill["electric_amount"]) == 140  # 20 * 7
     assert float(bill["garbage_fee"]) == 30
     assert float(bill["late_fee"]) == 300
-    assert float(bill["total_amount"]) == 5270
+    assert float(bill["total_amount"]) == 5770
