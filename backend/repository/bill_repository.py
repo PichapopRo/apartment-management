@@ -23,6 +23,14 @@ class BillRepository:
             query = query.filter(Bill.room_id == room_id)
         return query.order_by(Bill.room_id.asc()).all()
 
+    def get_latest_for_room(self, room_id: int) -> Bill | None:
+        return (
+            self.db.query(Bill)
+            .filter(Bill.room_id == room_id)
+            .order_by(Bill.billing_month.desc())
+            .first()
+        )
+
     def create(self, bill: Bill) -> Bill:
         self.db.add(bill)
         self.db.commit()

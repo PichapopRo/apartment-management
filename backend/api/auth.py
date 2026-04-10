@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from api.schemas.auth import Token, UserCreate, UserOut
+from api.schemas.auth import Token, UserCreate, UserOut, UserRoleUpdate
 from model.user import UserRole
 from services.user_service import UserService
 from utils.deps import get_current_user, get_db, require_roles
@@ -33,19 +33,20 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     if service.repo.get_by_email(payload.email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Only allow registration for the very first user (bootstrap admin).
-    if service.users_count() > 0:
-        raise HTTPException(status_code=403, detail="Registration is closed")
-
-    if payload.role != UserRole.ADMIN:
-        raise HTTPException(status_code=400, detail="First user must be admin")
+    # First user must be admin. After that, default all registrations to resident.
+    if service.users_count() == 0:
+        if payload.role != UserRole.ADMIN:
+            raise HTTPException(status_code=400, detail="First user must be admin")
+        role = UserRole.ADMIN
+    else:
+        role = UserRole.RESIDENT
 
     return service.create_user(
         username=payload.username,
         email=payload.email,
         password=payload.password,
         full_name=payload.full_name,
-        role=payload.role,
+        role=role,
     )
 
 
@@ -68,3 +69,19 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
         full_name=payload.full_name,
         role=payload.role,
     )
+
+
+@router.get("/users", response_model=list[UserOut], dependencies=[Depends(require_roles(UserRole.ADMIN))])
+def list_users(db: Session = Depends(get_db)):
+    return UserService(db).list_users()
+
+
+@router.patch("/users/{user_id}/role", response_model=UserOut, dependencies=[Depends(require_roles(UserRole.ADMIN))])
+def update_user_role(user_id: int, payload: UserRoleUpdate, db: Session = Depends(get_db)):
+    service = UserService(db)
+    user = service.repo.get_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == 1 and payload.role != UserRole.ADMIN:
+        raise HTTPException(status_code=400, detail="First user must remain admin")
+    return service.update_role(user, payload.role)

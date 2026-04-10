@@ -37,3 +37,10 @@ class UserService:
 
     def users_count(self) -> int:
         return self.repo.count()
+
+    def list_users(self) -> list[User]:
+        return self.repo.list_all()
+
+    def update_role(self, user: User, role: UserRole) -> User:
+        user.role = role.value
+        return self.repo.update(user)

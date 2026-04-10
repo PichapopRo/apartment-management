@@ -47,9 +47,26 @@ def list_rooms(db: Session = Depends(get_db)):
     response_model=list[RoomPublic],
     dependencies=[Depends(require_roles(UserRole.RESIDENT))],
 )
-def list_rooms_public(db: Session = Depends(get_db)):
+def list_rooms_public(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     rooms = RoomRepository(db).list_all()
-    return [RoomPublic(room_number=r.room_number, status=r.status) for r in rooms]
+    my_room_id = None
+    tenancy = (
+        db.query(Tenancy)
+        .filter(Tenancy.resident_user_id == current_user.id, Tenancy.is_active == True)  # noqa: E712
+        .first()
+    )
+    if tenancy:
+        my_room_id = tenancy.room_id
+    response = []
+    for room in rooms:
+        response.append(
+            RoomPublic(
+                room_number=room.room_number,
+                status=room.status,
+                is_my_room=room.id == my_room_id,
+            )
+        )
+    return response
 
 
 @router.post("", response_model=RoomOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_roles(UserRole.ADMIN))])

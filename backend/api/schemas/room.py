@@ -33,3 +33,4 @@ class RoomOut(BaseModel):
 class RoomPublic(BaseModel):
     room_number: str
     status: RoomStatus
+    is_my_room: bool = False

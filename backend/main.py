@@ -7,6 +7,7 @@ import model
 
 from api.auth import router as auth_router
 from api.billing import router as billing_router
+from api.resident import router as resident_router
 from api.reports import router as reports_router
 from api.receipts import router as receipts_router
 from api.rooms import router as rooms_router
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(billing_router)
+    app.include_router(resident_router)
     app.include_router(reports_router)
     app.include_router(receipts_router)
     app.include_router(rooms_router)

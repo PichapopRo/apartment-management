@@ -16,6 +16,14 @@ class RoomRepository:
     def list_all(self) -> list[Room]:
         return self.db.query(Room).order_by(Room.room_number.asc()).all()
 
+    def list_available(self) -> list[Room]:
+        return (
+            self.db.query(Room)
+            .filter(Room.status == "vacant")
+            .order_by(Room.room_number.asc())
+            .all()
+        )
+
     def create(self, room: Room) -> Room:
         self.db.add(room)
         self.db.commit()
