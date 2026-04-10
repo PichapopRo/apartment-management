@@ -76,7 +76,7 @@ class ReportService:
         rows = (
             self.db.query(Bill, Room)
             .join(Room, Room.id == Bill.room_id)
-            .order_by(Bill.billing_month.asc(), Room.room_number.asc())
+            .order_by(Room.room_number.asc(), Bill.billing_month.asc())
             .all()
         )
         data = []
@@ -85,23 +85,17 @@ class ReportService:
                 {
                     "room_number": room.room_number,
                     "billing_month": bill.billing_month,
-                    "rent_amount": float(bill.rent_amount),
-                    "water_units": float(bill.water_units),
-                    "water_amount": float(bill.water_amount),
-                    "electric_units": float(bill.electric_units),
-                    "electric_amount": float(bill.electric_amount),
-                    "garbage_fee": float(bill.garbage_fee),
-                    "late_fee": float(bill.late_fee),
-                    "late_fee_applied": bool(bill.late_fee_applied),
                     "total_amount": float(bill.total_amount),
-                    "status": bill.status,
-                    "is_paid": bool(bill.is_paid),
-                    "paid_at": bill.paid_at.isoformat() if bill.paid_at else "",
-                    "remark": bill.remark or "",
                 }
             )
         df = pd.DataFrame(data)
-        return self._to_xlsx(df, sheet_name="Bills")
+        pivot = df.pivot_table(
+            index="room_number",
+            columns="billing_month",
+            values="total_amount",
+            aggfunc="first",
+        ).reset_index()
+        return self._to_xlsx(pivot, sheet_name="Bills")
 
     def export_readings_all(self) -> bytes:
         rows = (
@@ -110,18 +104,43 @@ class ReportService:
             .order_by(MeterReading.billing_month.asc(), Room.room_number.asc())
             .all()
         )
-        data = []
+        water_data = []
+        electric_data = []
         for reading, room in rows:
-            data.append(
+            water_data.append(
                 {
                     "room_number": room.room_number,
                     "billing_month": reading.billing_month,
                     "water_value": float(reading.water_value),
+                }
+            )
+            electric_data.append(
+                {
+                    "room_number": room.room_number,
+                    "billing_month": reading.billing_month,
                     "electric_value": float(reading.electric_value),
                 }
             )
-        df = pd.DataFrame(data)
-        return self._to_xlsx(df, sheet_name="Meter Readings")
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            water_df = pd.DataFrame(water_data)
+            water_pivot = water_df.pivot_table(
+                index="room_number",
+                columns="billing_month",
+                values="water_value",
+                aggfunc="first",
+            ).reset_index()
+            electric_df = pd.DataFrame(electric_data)
+            electric_pivot = electric_df.pivot_table(
+                index="room_number",
+                columns="billing_month",
+                values="electric_value",
+                aggfunc="first",
+            ).reset_index()
+            water_pivot.to_excel(writer, index=False, sheet_name="Water")
+            electric_pivot.to_excel(writer, index=False, sheet_name="Electric")
+        output.seek(0)
+        return output.read()
 
     def export_all(self) -> bytes:
         bills = self.db.query(Bill, Room).join(Room, Room.id == Bill.room_id).order_by(
@@ -137,36 +156,53 @@ class ReportService:
                 {
                     "room_number": room.room_number,
                     "billing_month": bill.billing_month,
-                    "rent_amount": float(bill.rent_amount),
-                    "water_units": float(bill.water_units),
-                    "water_amount": float(bill.water_amount),
-                    "electric_units": float(bill.electric_units),
-                    "electric_amount": float(bill.electric_amount),
-                    "garbage_fee": float(bill.garbage_fee),
-                    "late_fee": float(bill.late_fee),
-                    "late_fee_applied": bool(bill.late_fee_applied),
                     "total_amount": float(bill.total_amount),
-                    "status": bill.status,
-                    "is_paid": bool(bill.is_paid),
-                    "paid_at": bill.paid_at.isoformat() if bill.paid_at else "",
-                    "remark": bill.remark or "",
                 }
             )
 
-        readings_data = []
+        water_data = []
+        electric_data = []
         for reading, room in readings:
-            readings_data.append(
+            water_data.append(
                 {
                     "room_number": room.room_number,
                     "billing_month": reading.billing_month,
                     "water_value": float(reading.water_value),
+                }
+            )
+            electric_data.append(
+                {
+                    "room_number": room.room_number,
+                    "billing_month": reading.billing_month,
                     "electric_value": float(reading.electric_value),
                 }
             )
 
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            pd.DataFrame(bills_data).to_excel(writer, index=False, sheet_name="Bills")
-            pd.DataFrame(readings_data).to_excel(writer, index=False, sheet_name="Meter Readings")
+            bills_df = pd.DataFrame(bills_data)
+            bills_pivot = bills_df.pivot_table(
+                index="room_number",
+                columns="billing_month",
+                values="total_amount",
+                aggfunc="first",
+            ).reset_index()
+            water_df = pd.DataFrame(water_data)
+            water_pivot = water_df.pivot_table(
+                index="room_number",
+                columns="billing_month",
+                values="water_value",
+                aggfunc="first",
+            ).reset_index()
+            electric_df = pd.DataFrame(electric_data)
+            electric_pivot = electric_df.pivot_table(
+                index="room_number",
+                columns="billing_month",
+                values="electric_value",
+                aggfunc="first",
+            ).reset_index()
+            bills_pivot.to_excel(writer, index=False, sheet_name="Bills")
+            water_pivot.to_excel(writer, index=False, sheet_name="Water")
+            electric_pivot.to_excel(writer, index=False, sheet_name="Electric")
         output.seek(0)
         return output.read()

@@ -224,6 +224,22 @@ const saveBills = async () => {
   }
 }
 
+const exportAll = async () => {
+  try {
+    const blob = await apiClient.getBlob('/reports/export-all')
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'apartment-export.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    error.value = 'Failed to export all data.'
+  }
+}
+
 const exportBills = async () => {
   if (!selectedMonth.value) {
     error.value = 'Please select a month first.'
@@ -285,6 +301,12 @@ onMounted(async () => {
           @click="exportBills"
         >
           Export Bills
+        </button>
+        <button
+          class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
+          @click="exportAll"
+        >
+          Export All
         </button>
         <button
           class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
