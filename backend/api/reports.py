@@ -42,3 +42,51 @@ def export_readings(month: str, db: Session = Depends(get_db)):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers=headers,
     )
+
+
+@router.get(
+    "/bills/export-all",
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
+)
+def export_bills_all(db: Session = Depends(get_db)):
+    service = ReportService(db)
+    content = service.export_bills_all()
+    filename = "bills-all.xlsx"
+    headers = {"Content-Disposition": f"attachment; filename={filename}"}
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers=headers,
+    )
+
+
+@router.get(
+    "/readings/export-all",
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
+)
+def export_readings_all(db: Session = Depends(get_db)):
+    service = ReportService(db)
+    content = service.export_readings_all()
+    filename = "readings-all.xlsx"
+    headers = {"Content-Disposition": f"attachment; filename={filename}"}
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers=headers,
+    )
+
+
+@router.get(
+    "/export-all",
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
+)
+def export_all(db: Session = Depends(get_db)):
+    service = ReportService(db)
+    content = service.export_all()
+    filename = "apartment-export.xlsx"
+    headers = {"Content-Disposition": f"attachment; filename={filename}"}
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers=headers,
+    )
