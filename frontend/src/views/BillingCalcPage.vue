@@ -224,6 +224,26 @@ const saveBills = async () => {
   }
 }
 
+const exportBills = async () => {
+  if (!selectedMonth.value) {
+    error.value = 'Please select a month first.'
+    return
+  }
+  try {
+    const blob = await apiClient.getBlob(`/reports/bills/export?month=${selectedMonth.value}`)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bills-${selectedMonth.value}.xlsx`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    error.value = 'Failed to export bills.'
+  }
+}
+
 onMounted(async () => {
   await loadData()
 })
@@ -259,6 +279,12 @@ onMounted(async () => {
           @click="saveBills"
         >
           Save & Print
+        </button>
+        <button
+          class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
+          @click="exportBills"
+        >
+          Export Bills
         </button>
         <button
           class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"

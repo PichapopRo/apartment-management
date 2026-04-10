@@ -19,6 +19,9 @@ class UserRepository:
     def count(self) -> int:
         return self.db.query(User).count()
 
+    def list_all(self) -> list[User]:
+        return self.db.query(User).order_by(User.id.asc()).all()
+
     def create(self, user: User) -> User:
         self.db.add(user)
         self.db.commit()
