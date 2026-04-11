@@ -5,11 +5,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from services.billing_service import BillingService
-from database import SessionLocal
-from model.bill import Bill
-from model.receipt import Receipt
-from model.meter_reading import MeterReading
+from services.billing_service import BillingService  # noqa: E402
+from database import SessionLocal  # noqa: E402
+from model.bill import Bill  # noqa: E402
+from model.receipt import Receipt  # noqa: E402
+from model.meter_reading import MeterReading  # noqa: E402
 
 TARGET_MONTH = "2026-03"
 

@@ -9,7 +9,6 @@ const router = useRouter()
 const isPublic = computed(() => Boolean(route.meta.public))
 const userRole = computed(() => authStore.user.value?.role)
 const isAdminOrStaff = computed(() => userRole.value === 'admin' || userRole.value === 'staff')
-const isResident = computed(() => userRole.value === 'resident')
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const logout = () => {

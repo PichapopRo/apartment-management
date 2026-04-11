@@ -5,8 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-import model
-
 from api.auth import router as auth_router
 from api.billing import router as billing_router
 from api.resident import router as resident_router
@@ -18,13 +16,12 @@ from database import Base, engine
 from utils.storage import ensure_upload_dir
 
 
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ensure_upload_dir()
     Base.metadata.create_all(bind=engine)
     yield
+
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Apartment Management API", lifespan=lifespan)
@@ -65,6 +62,5 @@ def create_app() -> FastAPI:
     app.include_router(rooms_router)
     app.include_router(tenancies_router)
     return app
-
 
 app = create_app()

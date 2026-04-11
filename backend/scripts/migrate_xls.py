@@ -11,13 +11,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from database import SessionLocal
-from model.meter_reading import MeterReading
-from model.room import Room, RoomStatus
-from repository.meter_reading_repository import MeterReadingRepository
-from repository.bill_repository import BillRepository
-from model.bill import Bill
-from repository.room_repository import RoomRepository
+from database import SessionLocal  # noqa: E402
+from model.meter_reading import MeterReading  # noqa: E402
+from model.room import Room, RoomStatus  # noqa: E402
+from repository.meter_reading_repository import MeterReadingRepository  # noqa: E402
+from repository.bill_repository import BillRepository  # noqa: E402
+from model.bill import Bill  # noqa: E402
+from repository.room_repository import RoomRepository  # noqa: E402
 
 
 MONTHS = {

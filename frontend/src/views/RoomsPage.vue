@@ -1,7 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import RoomCard from '../components/RoomCard.vue'
-import StatusPill from '../components/StatusPill.vue'
 import { apiClient } from '../utils/api'
 import { authStore } from '../stores/auth'
 

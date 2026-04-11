@@ -10,7 +10,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from sqlalchemy.orm import Session
 
-from model.bill import Bill
 from model.receipt import Receipt
 from repository.bill_repository import BillRepository
 from repository.receipt_repository import ReceiptRepository
@@ -45,9 +44,9 @@ def _amount_to_words_en(amount: Decimal) -> str:
     n = int(amount)
     frac = int((amount - Decimal(n)) * 100)
 
-    ones = ["Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine"]
-    teens = ["Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"]
-    tens = ["","", "Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"]
+    ones = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+    teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
+    tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
 
     def words_under_1000(x: int) -> str:
         parts = []
@@ -186,7 +185,7 @@ class ReceiptService:
         total_amount = Decimal(bill.total_amount or 0)
         amount_words = _amount_to_words_en(total_amount)
 
-        # Payment method text (adjust if you store it elsewhere)
+        # Payment method text
         payment_method = "Cash"
 
         # ===== Title block =====
@@ -194,7 +193,6 @@ class ReceiptService:
         title = "RECEIPT VOUCHER - COPY" if is_copy else "RECEIPT VOUCHER"
         text_center(left + usable_w / 2, y(1), title, 12, bold=True)
 
-        # Right header info aligned with left info block
         label_x = left + usable_w * 0.62
         value_x = left + usable_w
 
@@ -220,7 +218,7 @@ class ReceiptService:
         # ===== Table (fixed columns) =====
         # Columns: Qty | Description | Unit Price | Amount
         table_top_row = 8
-        table_rows = 6  # header + up to 4 items + total line area
+        table_rows = 6
         table_top = y(table_top_row) + row_h * 0.6
         table_bottom = y(table_top_row + table_rows) - row_h * 0.2
 
@@ -235,13 +233,11 @@ class ReceiptService:
         x_amt = x_unit + unit_w
         x_end = left + usable_w
 
-        # Border + verticals
         c.rect(left, table_bottom, usable_w, table_top - table_bottom, stroke=1, fill=0)
         c.line(x_desc, table_bottom, x_desc, table_top)
         c.line(x_unit, table_bottom, x_unit, table_top)
         c.line(x_amt, table_bottom, x_amt, table_top)
 
-        # Header row underline
         header_y = y(table_top_row)
         c.line(left, header_y - row_h * 0.45, x_end, header_y - row_h * 0.45)
 
@@ -270,7 +266,6 @@ class ReceiptService:
             else:
                 items.append((Decimal("1"), "Water", wa, wa))
         # Electric
-
         if bill.electric_amount and Decimal(bill.electric_amount) > 0:
             eu = Decimal(bill.electric_units or 0)
             ea = Decimal(bill.electric_amount or 0)
@@ -285,7 +280,6 @@ class ReceiptService:
             lf = Decimal(bill.late_fee)
             items.append((Decimal("1"), "Late payment fee", lf, lf))
 
-        # Render up to 4 item rows (keep layout like sample)
         max_item_rows = 4
         start_row = table_top_row + 1
         for idx, (qty, desc, unit_price, amt) in enumerate(items[:max_item_rows]):
@@ -295,14 +289,12 @@ class ReceiptService:
             text_right(x_unit + unit_w - pad, ry, f"{unit_price:,.2f}", 10)
             text_right(x_amt + amt_w - pad, ry, f"{amt:,.2f}", 10)
 
-        # Total line (bottom)
+        # Total line
         total_y = y(table_top_row + table_rows)
         text_left(x_desc + pad, total_y, "TOTAL", 10, bold=True)
         text_right(x_amt + amt_w - pad, total_y, f"{total_amount:,.2f}", 10, bold=True)
 
         # ===== Payment terms (English version of sample text) =====
-        # Sample mentions pay by 5th; late fee per day; bank transfer details; lock room by 15th.
-        # Keep as constants or config in real app.
         terms_y = y(table_top_row + table_rows + 2)
 
         terms = [
