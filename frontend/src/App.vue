@@ -8,6 +8,8 @@ const router = useRouter()
 
 const isPublic = computed(() => Boolean(route.meta.public))
 const userRole = computed(() => authStore.user.value?.role)
+const isAdminOrStaff = computed(() => userRole.value === 'admin' || userRole.value === 'staff')
+const isResident = computed(() => userRole.value === 'resident')
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const logout = () => {
@@ -49,6 +51,7 @@ const logout = () => {
           Rooms
         </RouterLink>
         <RouterLink
+          v-if="isAdminOrStaff"
           to="/meters"
           class="rounded-xl border border-slate-700 px-3 py-2 text-sm transition hover:-translate-y-0.5 hover:border-slate-400"
           active-class="bg-slate-800/80 border-slate-300"
@@ -56,6 +59,7 @@ const logout = () => {
           Meters
         </RouterLink>
         <RouterLink
+          v-if="isAdminOrStaff"
           to="/meters/yearly"
           class="rounded-xl border border-slate-700 px-3 py-2 text-sm transition hover:-translate-y-0.5 hover:border-slate-400"
           active-class="bg-slate-800/80 border-slate-300"
@@ -63,6 +67,7 @@ const logout = () => {
           Yearly Meters
         </RouterLink>
         <RouterLink
+          v-if="isAdminOrStaff"
           to="/billing/calc"
           class="rounded-xl border border-slate-700 px-3 py-2 text-sm transition hover:-translate-y-0.5 hover:border-slate-400"
           active-class="bg-slate-800/80 border-slate-300"
@@ -70,6 +75,7 @@ const logout = () => {
           Rent Calc
         </RouterLink>
         <RouterLink
+          v-if="isAdminOrStaff"
           to="/billing/status"
           class="rounded-xl border border-slate-700 px-3 py-2 text-sm transition hover:-translate-y-0.5 hover:border-slate-400"
           active-class="bg-slate-800/80 border-slate-300"

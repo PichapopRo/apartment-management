@@ -11,6 +11,7 @@ defineProps<{
   residentName?: string | null
   showDetails: boolean
   canEdit: boolean
+  isMyRoom?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -31,7 +32,15 @@ const emit = defineEmits<{
           Floor {{ floor ?? '-' }} · {{ rentRate?.toLocaleString() ?? '—' }} THB
         </div>
       </div>
-      <StatusPill :status="status" />
+      <div class="flex items-center gap-2">
+        <StatusPill :status="status" />
+        <span
+          v-if="isMyRoom"
+          class="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-indigo-700"
+        >
+          Your Room
+        </span>
+      </div>
     </div>
 
     <div v-if="showDetails" class="text-xs text-slate-600">

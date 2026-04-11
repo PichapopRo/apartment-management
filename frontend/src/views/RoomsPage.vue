@@ -13,6 +13,7 @@ type Room = {
   status: 'vacant' | 'occupied' | 'maintenance'
   current_resident_name?: string | null
   current_resident_phone?: string | null
+  is_my_room?: boolean
 }
 
 const rooms = ref<Room[]>([])
@@ -56,13 +57,14 @@ const loadRooms = async () => {
   error.value = ''
   try {
     if (isResident.value) {
-      const publicRooms = await apiClient.get<Array<{ room_number: string; status: Room['status'] }>>(
+      const publicRooms = await apiClient.get<Array<{ room_number: string; status: Room['status']; is_my_room?: boolean }>>(
         '/rooms/public'
       )
       rooms.value = publicRooms.map((room, idx) => ({
         id: idx + 1,
         room_number: room.room_number,
-        status: room.status
+        status: room.status,
+        is_my_room: room.is_my_room
       }))
     } else {
       rooms.value = await apiClient.get<Room[]>('/rooms')
@@ -211,7 +213,6 @@ const submitUpload = async () => {
     <header class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">Rooms</h1>
       <div class="flex items-center gap-3">
-        <StatusPill v-if="isResident" status="occupied" />
         <button
           v-if="isAdmin"
           class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
@@ -236,6 +237,7 @@ const submitUpload = async () => {
         :resident-name="room.current_resident_name"
         :show-details="!isResident"
         :can-edit="isAdmin"
+        :is-my-room="room.is_my_room"
         @edit="editRoom(room)"
         @delete="deleteRoom(room.id)"
         @assign="openAssign(room.id)"
