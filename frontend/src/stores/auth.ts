@@ -36,10 +36,24 @@ const register = async (payload: {
   email: string
   full_name?: string
   password: string
-  role: 'admin' | 'staff' | 'resident'
+  role?: 'admin' | 'staff' | 'resident'
 }) => {
-  await apiClient.post('/auth/register', payload)
-  await login(payload.username, payload.password)
+  const body = {
+    username: payload.username,
+    email: payload.email,
+    full_name: payload.full_name,
+    password: payload.password,
+    role: 'resident' as const
+  }
+  try {
+    await apiClient.post('/auth/register', body)
+    await login(payload.username, payload.password)
+  } catch (err: any) {
+    if (err instanceof Error) {
+      throw err
+    }
+    throw err
+  }
 }
 
 const fetchMe = async () => {

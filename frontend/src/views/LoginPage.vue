@@ -1,12 +1,23 @@
-﻿<script setup lang="ts">
-import { ref } from 'vue'
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../stores/auth'
+import { apiClient } from '../utils/api'
 
 const router = useRouter()
 const username = ref('')
 const password = ref('')
 const error = ref('')
+const hasAdmin = ref(false)
+
+const loadBootstrap = async () => {
+  try {
+    const res = await apiClient.get<{ admin_exists: boolean }>('/auth/bootstrap')
+    hasAdmin.value = res.admin_exists
+  } catch {
+    hasAdmin.value = true
+  }
+}
 
 const submit = async () => {
   error.value = ''
@@ -17,6 +28,8 @@ const submit = async () => {
     error.value = 'Login failed. Please check your credentials.'
   }
 }
+
+onMounted(loadBootstrap)
 </script>
 
 <template>
@@ -37,7 +50,7 @@ const submit = async () => {
             v-model="password"
             type="password"
             class="rounded-xl border border-slate-200 px-3 py-2"
-            placeholder="••••••••"
+            placeholder="????????"
           />
         </label>
         <button
@@ -49,7 +62,10 @@ const submit = async () => {
         <div v-if="error" class="text-xs text-rose-600">{{ error }}</div>
       </form>
       <div class="text-xs text-slate-500">
-        First time? <router-link class="text-slate-900 underline" to="/register">Create admin account</router-link>
+        First time?
+        <router-link class="text-slate-900 underline" to="/register">
+          {{ hasAdmin ? 'Create account' : 'Create admin account' }}
+        </router-link>
       </div>
     </div>
   </div>

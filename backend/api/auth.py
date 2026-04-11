@@ -55,6 +55,12 @@ def me(user=Depends(get_current_user)):
     return user
 
 
+@router.get("/bootstrap")
+def bootstrap_status(db: Session = Depends(get_db)):
+    service = UserService(db)
+    return {"admin_exists": service.users_count() > 0}
+
+
 @router.post("/users", response_model=UserOut, dependencies=[Depends(require_roles(UserRole.ADMIN))])
 def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     service = UserService(db)
