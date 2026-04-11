@@ -8,6 +8,7 @@ import MeterPage from './views/MeterPage.vue'
 import MeterYearPage from './views/MeterYearPage.vue'
 import BillingCalcPage from './views/BillingCalcPage.vue'
 import BillStatusPage from './views/BillStatusPage.vue'
+import UsersPage from './views/UsersPage.vue'
 import { authStore } from './stores/auth'
 
 const routes = [
@@ -19,7 +20,8 @@ const routes = [
   { path: '/meters', component: MeterPage },
   { path: '/meters/yearly', component: MeterYearPage },
   { path: '/billing/calc', component: BillingCalcPage },
-  { path: '/billing/status', component: BillStatusPage }
+  { path: '/billing/status', component: BillStatusPage },
+  { path: '/users', component: UsersPage }
 ]
 
 export const router = createRouter({

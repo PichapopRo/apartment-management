@@ -38,7 +38,7 @@ def test_register_closed_after_first_user(client):
             "role": "admin",
         },
     )
-    # Second registration should be blocked
+    # Second registration should default to resident and succeed
     res = client.post(
         "/auth/register",
         json={
@@ -49,4 +49,5 @@ def test_register_closed_after_first_user(client):
             "role": "resident",
         },
     )
-    assert res.status_code == 403
+    assert res.status_code == 200
+    assert res.json()["role"] == "resident"
