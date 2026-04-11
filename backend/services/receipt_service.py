@@ -45,8 +45,30 @@ def _amount_to_words_en(amount: Decimal) -> str:
     frac = int((amount - Decimal(n)) * 100)
 
     ones = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
-    teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
-    tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+    teens = [
+        "Ten",
+        "Eleven",
+        "Twelve",
+        "Thirteen",
+        "Fourteen",
+        "Fifteen",
+        "Sixteen",
+        "Seventeen",
+        "Eighteen",
+        "Nineteen",
+    ]
+    tens = [
+        "",
+        "",
+        "Twenty",
+        "Thirty",
+        "Forty",
+        "Fifty",
+        "Sixty",
+        "Seventy",
+        "Eighty",
+        "Ninety",
+    ]
 
     def words_under_1000(x: int) -> str:
         parts = []
@@ -58,7 +80,7 @@ def _amount_to_words_en(amount: Decimal) -> str:
             if r < 10:
                 parts.append(ones[r])
             elif r < 20:
-                parts.append(teens[r-10])
+                parts.append(teens[r - 10])
             else:
                 t = r // 10
                 o = r % 10

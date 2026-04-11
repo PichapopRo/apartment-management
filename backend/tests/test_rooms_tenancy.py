@@ -51,7 +51,7 @@ def test_room_create_admin_only_and_public_list(client):
     assert res.status_code == 201
 
     # Resident can only see public list
-    resident = _create_user(client, admin_token, "res1", "res1@example.com", "resident")
+    _create_user(client, admin_token, "res1", "res1@example.com", "resident")
     resident_token = _login(client, "res1", "StrongPass123")
 
     res = client.get("/rooms/public", headers={"Authorization": f"Bearer {resident_token}"})

@@ -63,4 +63,5 @@ def create_app() -> FastAPI:
     app.include_router(tenancies_router)
     return app
 
+
 app = create_app()
