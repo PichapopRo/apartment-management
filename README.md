@@ -80,15 +80,15 @@ python backend/scripts/migrate_xls.py --file "C:\path\to\Account sample_data.xls
 ```
 Notes:
 - The script reads the latest sheet by date for room pricing, and meter values per month.
-- Rooms are created in `001`�`018` format according to the sample data.
+- Rooms are created in `001`,`018` format according to the sample data.
 - Bills are generated with stored totals from the sheet when present.
 
 ## Screenshots
-- Login page: [image here]
-- Dashboard: [image here]
-- Rooms page: [image here]
-- Meter readings: [image here]
-- Rent calculation: [image here]
-- Bill status: [image here]
-- User management: [image here]
+- Login page: ![Login](screenshots/login.png)
+- Dashboard (Admin/Staff): ![Dashboard](screenshots/dashboard-admin-staff.png)
+- Rooms page: ![Rooms](screenshots/rooms.png)
+- Meter readings: ![Meter](screenshots/meter.png)
+- Yearly meter view: ![Yearly Meter](screenshots/yearly-meter.png)
+- Rent calculation: ![Rent Calc](screenshots/rentcalc.png)
+- Bill status: ![Bill Status](screenshots/bill-status.png)
 
