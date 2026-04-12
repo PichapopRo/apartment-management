@@ -75,17 +75,12 @@ docker compose down
 ### Import meter readings and bills from XLS
 Use the import script to load legacy data from an Excel workbook:
 ```
-python backend/scripts/migrate_xls.py --file "C:\path\to\Account book_MKhouse 2.xls" --apply --create-rooms
+python backend/scripts/migrate_xls.py --file "C:\path\to\Account sample_data.xls" --apply --create-rooms
 ```
 Notes:
 - The script reads the latest sheet by date for room pricing, and meter values per month.
-- Rooms are created in `001`–`018` format.
+- Rooms are created in `001`ï¿½`018` format according to the sample data.
 - Bills are generated with stored totals from the sheet when present.
-
-If you need a dry run:
-```
-python backend/scripts/migrate_xls.py --file "C:\path\to\Account book_MKhouse 2.xls"
-```
 
 ## Screenshots
 - Login page: [image here]
