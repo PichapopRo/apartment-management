@@ -22,13 +22,14 @@ High-level components:
   - Manage rooms, tenancies, meters, billing, receipts
   - Manage users (create, delete, change roles)
   - Edit global billing rates
-  - Export reports
+  - Generate bills and receipts
+  - Export data
 - **Staff**
   - Manage rooms and tenancies
   - Upload/view room documents
   - Manage meter readings and rent calculation
   - Generate bills and receipts
-  - Export reports
+  - Export data
 - **Resident**
   - View public room list (status only)
   - See own room (marked) and latest rent summary
@@ -38,7 +39,7 @@ High-level components:
 - **Backend**: FastAPI, SQLAlchemy, Pydantic
 - **Database**: PostgreSQL
 - **Frontend**: Vue 3, Vite, Tailwind CSS
-- **Auth**: JWT (OAuth2 password flow)
+- **Auth**: JWT (normal username / password flow)
 - **PDF**: ReportLab
 - **Exports**: XLSX via pandas/openpyxl
 - **Containerization**: Docker + Docker Compose
