@@ -16,6 +16,7 @@ from model.meter_reading import MeterReading
 from model.user import UserRole
 from repository.meter_reading_repository import MeterReadingRepository
 from services.billing_service import BillingService
+from services.meter_reading_service import MeterReadingService
 from repository.bill_repository import BillRepository
 from repository.billing_config_repository import BillingConfigRepository
 from utils.deps import get_db, require_roles
@@ -25,23 +26,24 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 @router.post(
     "/readings",
-    response_model=MeterReadingCreate,
+    response_model=MeterReadingOut,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.STAFF))],
 )
 def create_reading(payload: MeterReadingCreate, db: Session = Depends(get_db)):
     repo = MeterReadingRepository(db)
-    if repo.get_by_room_month(payload.room_id, payload.billing_month):
-        raise HTTPException(status_code=400, detail="Reading already exists for this month")
-
+    service = MeterReadingService(repo)
     reading = MeterReading(
         room_id=payload.room_id,
         billing_month=payload.billing_month,
         water_value=payload.water_value,
         electric_value=payload.electric_value,
     )
-    repo.create(reading)
-    return payload
+    try:
+        created = service.create_reading(reading)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return created
 
 
 @router.get(

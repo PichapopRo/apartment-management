@@ -20,8 +20,8 @@ const routes = [
   { path: '/meters', component: MeterPage },
   { path: '/meters/yearly', component: MeterYearPage },
   { path: '/billing/calc', component: BillingCalcPage },
-  { path: '/billing/status', component: BillStatusPage },
-  { path: '/users', component: UsersPage }
+  { path: '/billing/status', component: BillStatusPage, meta: { roles: ['admin'] } },
+  { path: '/users', component: UsersPage, meta: { roles: ['admin'] } }
 ]
 
 export const router = createRouter({
@@ -44,5 +44,11 @@ router.beforeEach(async (to) => {
       authStore.logout()
       return '/login'
     }
+  }
+
+  const roles = (to.meta as { roles?: string[] }).roles
+  const userRole = authStore.user.value?.role
+  if (roles && userRole && !roles.includes(userRole)) {
+    return '/dashboard'
   }
 })

@@ -37,3 +37,14 @@ class MeterReadingRepository:
             .order_by(MeterReading.billing_month.asc())
             .all()
         )
+
+    def get_previous_by_month(self, room_id: int, billing_month: str) -> MeterReading | None:
+        return (
+            self.db.query(MeterReading)
+            .filter(
+                MeterReading.room_id == room_id,
+                MeterReading.billing_month < billing_month,
+            )
+            .order_by(MeterReading.billing_month.desc())
+            .first()
+        )

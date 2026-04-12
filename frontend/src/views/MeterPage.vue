@@ -18,7 +18,13 @@ type Reading = {
 
 const rooms = ref<Room[]>([])
 const readingsByRoom = ref<Record<number, Reading[]>>({})
-const currentValues = ref<Record<number, string>>({})
+const currentValues = ref<{
+  water: Record<number, string>
+  electric: Record<number, string>
+}>({
+  water: {},
+  electric: {}
+})
 const month = ref('')
 const error = ref('')
 const tab = ref<'water' | 'electric'>('water')
@@ -66,20 +72,60 @@ const submitAll = async () => {
   }
   error.value = ''
   try {
-    const payloads = Object.entries(currentValues.value)
-      .filter(([, val]) => val !== '' && val !== null && val !== undefined)
-      .map(([roomId, val]) => ({
-        room_id: Number(roomId),
+    const missingRooms: string[] = []
+    const invalidRooms: string[] = []
+    const payloads = rooms.value.map((room) => {
+      const waterRaw = currentValues.value.water[room.id]
+      const electricRaw = currentValues.value.electric[room.id]
+
+      if (waterRaw === undefined || waterRaw === '' || electricRaw === undefined || electricRaw === '') {
+        missingRooms.push(room.room_number)
+        return null
+      }
+
+      const waterVal = Number(waterRaw)
+      const electricVal = Number(electricRaw)
+      if (!Number.isFinite(waterVal) || !Number.isFinite(electricVal)) {
+        invalidRooms.push(room.room_number)
+        return null
+      }
+
+      const latest = (readingsByRoom.value[room.id] || [])[0]
+      if (latest) {
+        const prevWater = Number(latest.water_value)
+        const prevElectric = Number(latest.electric_value)
+        if (Number.isFinite(prevWater) && waterVal <= prevWater) {
+          invalidRooms.push(room.room_number)
+          return null
+        }
+        if (Number.isFinite(prevElectric) && electricVal <= prevElectric) {
+          invalidRooms.push(room.room_number)
+          return null
+        }
+      }
+
+      return {
+        room_id: room.id,
         billing_month: month.value,
-        water_value: tab.value === 'water' ? Number(val) : 0,
-        electric_value: tab.value === 'electric' ? Number(val) : 0
-      }))
+        water_value: waterVal,
+        electric_value: electricVal
+      }
+    }).filter((item): item is NonNullable<typeof item> => item !== null)
+
+    if (missingRooms.length) {
+      error.value = `Please fill water and electricity for: ${missingRooms.join(', ')}`
+      return
+    }
+    if (invalidRooms.length) {
+      error.value = `Values must be greater than previous month for: ${invalidRooms.join(', ')}`
+      return
+    }
 
     for (const payload of payloads) {
       await apiClient.post('/billing/readings', payload)
     }
 
-    currentValues.value = {}
+    currentValues.value = { water: {}, electric: {} }
     await loadReadings()
   } catch (err) {
     error.value = 'Failed to save readings.'
@@ -150,7 +196,7 @@ onMounted(async () => {
               <td class="px-4 py-3 font-semibold text-slate-700">{{ room.room_number }}</td>
               <td class="px-4 py-3">
                 <input
-                  v-model="currentValues[room.id]"
+                  v-model="currentValues[tab][room.id]"
                   type="number"
                   class="w-28 rounded-lg border border-slate-200 px-2 py-1"
                 />
