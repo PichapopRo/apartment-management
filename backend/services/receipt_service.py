@@ -14,6 +14,7 @@ from model.receipt import Receipt
 from repository.bill_repository import BillRepository
 from repository.receipt_repository import ReceiptRepository
 from repository.room_repository import RoomRepository
+from utils.errors import ConflictError, NotFoundError
 
 FONT_REGISTERED = False
 FONT_NAME = "Helvetica"
@@ -136,11 +137,11 @@ class ReceiptService:
     def issue_receipt(self, bill_id: int) -> Receipt:
         bill = self.bills.get_by_id(bill_id)
         if bill is None:
-            raise ValueError("Bill not found")
+            raise NotFoundError("Bill not found")
 
         existing = self.receipts.get_by_bill_id(bill_id)
         if existing and existing.status != "VOIDED":
-            raise ValueError("Receipt already issued for this bill")
+            raise ConflictError("Receipt already issued for this bill")
 
         receipt = Receipt(
             bill_id=bill_id,
@@ -152,7 +153,7 @@ class ReceiptService:
     def void_receipt(self, receipt_id: int, reason: str) -> Receipt:
         receipt = self.receipts.get_by_id(receipt_id)
         if receipt is None:
-            raise ValueError("Receipt not found")
+            raise NotFoundError("Receipt not found")
         if receipt.status == "VOIDED":
             return receipt
         receipt.status = "VOIDED"
@@ -344,10 +345,10 @@ class ReceiptService:
         _register_fonts()
         receipt = self.receipts.get_by_id(receipt_id)
         if receipt is None:
-            raise ValueError("Receipt not found")
+            raise NotFoundError("Receipt not found")
         bill = self.bills.get_by_id(receipt.bill_id)
         if bill is None:
-            raise ValueError("Bill not found")
+            raise NotFoundError("Bill not found")
 
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)

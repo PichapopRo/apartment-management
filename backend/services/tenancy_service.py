@@ -8,6 +8,7 @@ from model.user import UserRole
 from repository.room_repository import RoomRepository
 from repository.tenancy_repository import TenancyRepository
 from repository.user_repository import UserRepository
+from utils.errors import BadRequestError, ConflictError, NotFoundError
 
 
 class TenancyService:
@@ -27,22 +28,22 @@ class TenancyService:
     ) -> Tenancy:
         room = self.rooms.get_by_id(room_id)
         if room is None:
-            raise ValueError("Room not found")
+            raise NotFoundError("Room not found")
 
         if resident_user_id is None and not resident_name:
-            raise ValueError("Resident name or resident user id is required")
+            raise BadRequestError("Resident name or resident user id is required")
 
         resident = None
         if resident_user_id is not None:
             resident = self.users.get_by_id(resident_user_id)
             if resident is None or resident.role != UserRole.RESIDENT.value:
-                raise ValueError("Resident not found")
+                raise NotFoundError("Resident not found")
 
         if self.tenancies.get_active_by_room(room_id):
-            raise ValueError("Room already occupied")
+            raise ConflictError("Room already occupied")
 
         if resident_user_id is not None and self.tenancies.get_active_by_resident(resident_user_id):
-            raise ValueError("Resident already assigned to a room")
+            raise ConflictError("Resident already assigned to a room")
 
         tenancy = Tenancy(
             room_id=room_id,
@@ -64,7 +65,7 @@ class TenancyService:
     ) -> Tenancy:
         tenancy = self.tenancies.get_active_by_room(room_id)
         if tenancy is None:
-            raise ValueError("Active tenancy not found")
+            raise NotFoundError("Active tenancy not found")
         if resident_name is not None:
             tenancy.resident_name = resident_name
         if tenant_phone is not None:
@@ -74,7 +75,7 @@ class TenancyService:
     def move_out(self, tenancy_id: int, move_out: date) -> Tenancy:
         tenancy = self.tenancies.get_by_id(tenancy_id)
         if tenancy is None or not tenancy.is_active:
-            raise ValueError("Active tenancy not found")
+            raise NotFoundError("Active tenancy not found")
 
         tenancy.move_out_date = move_out
         tenancy.is_active = False

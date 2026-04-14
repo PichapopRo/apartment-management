@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from api.schemas.tenancy import TenancyAssign, TenancyMoveOut, TenancyOut, TenancyUpdate
@@ -17,16 +17,13 @@ router = APIRouter(prefix="/tenancies", tags=["tenancies"])
 )
 def assign_tenancy(payload: TenancyAssign, db: Session = Depends(get_db)):
     service = TenancyService(db)
-    try:
-        tenancy = service.assign_resident(
-            room_id=payload.room_id,
-            resident_user_id=payload.resident_user_id,
-            resident_name=payload.resident_name,
-            tenant_phone=payload.tenant_phone,
-            move_in=payload.move_in_date,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    tenancy = service.assign_resident(
+        room_id=payload.room_id,
+        resident_user_id=payload.resident_user_id,
+        resident_name=payload.resident_name,
+        tenant_phone=payload.tenant_phone,
+        move_in=payload.move_in_date,
+    )
 
     resident_name = tenancy.resident_name or (tenancy.resident.full_name if tenancy.resident else None)
     return TenancyOut(
@@ -48,10 +45,7 @@ def assign_tenancy(payload: TenancyAssign, db: Session = Depends(get_db)):
 )
 def move_out(tenancy_id: int, payload: TenancyMoveOut, db: Session = Depends(get_db)):
     service = TenancyService(db)
-    try:
-        tenancy = service.move_out(tenancy_id=tenancy_id, move_out=payload.move_out_date)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    tenancy = service.move_out(tenancy_id=tenancy_id, move_out=payload.move_out_date)
 
     resident_name = tenancy.resident_name or (tenancy.resident.full_name if tenancy.resident else None)
     return TenancyOut(
@@ -73,14 +67,11 @@ def move_out(tenancy_id: int, payload: TenancyMoveOut, db: Session = Depends(get
 )
 def update_tenant(room_id: int, payload: TenancyUpdate, db: Session = Depends(get_db)):
     service = TenancyService(db)
-    try:
-        tenancy = service.update_active_tenancy(
-            room_id=room_id,
-            resident_name=payload.resident_name,
-            tenant_phone=payload.tenant_phone,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    tenancy = service.update_active_tenancy(
+        room_id=room_id,
+        resident_name=payload.resident_name,
+        tenant_phone=payload.tenant_phone,
+    )
 
     resident_name = tenancy.resident_name or (tenancy.resident.full_name if tenancy.resident else None)
     return TenancyOut(

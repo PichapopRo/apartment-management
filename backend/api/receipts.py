@@ -18,10 +18,7 @@ router = APIRouter(prefix="/receipts", tags=["receipts"])
 )
 def issue_receipt(payload: ReceiptIssue, db: Session = Depends(get_db)):
     service = ReceiptService(db)
-    try:
-        return service.issue_receipt(payload.bill_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return service.issue_receipt(payload.bill_id)
 
 
 @router.post(
@@ -31,10 +28,7 @@ def issue_receipt(payload: ReceiptIssue, db: Session = Depends(get_db)):
 )
 def void_receipt(receipt_id: int, payload: ReceiptVoid, db: Session = Depends(get_db)):
     service = ReceiptService(db)
-    try:
-        return service.void_receipt(receipt_id, payload.reason)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return service.void_receipt(receipt_id, payload.reason)
 
 
 @router.get(
@@ -55,10 +49,7 @@ def get_receipt(receipt_id: int, db: Session = Depends(get_db)):
 )
 def get_receipt_pdf(receipt_id: int, db: Session = Depends(get_db)):
     service = ReceiptService(db)
-    try:
-        pdf_bytes = service.render_pdf(receipt_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    pdf_bytes = service.render_pdf(receipt_id)
     return Response(content=pdf_bytes, media_type="application/pdf")
 
 

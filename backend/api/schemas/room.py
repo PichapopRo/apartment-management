@@ -27,6 +27,7 @@ class RoomOut(BaseModel):
     status: RoomStatus
     current_resident_name: Optional[str] = None
     current_resident_phone: Optional[str] = None
+    has_related: Optional[bool] = None
     model_config = ConfigDict(from_attributes=True)
 
 

@@ -20,6 +20,7 @@ from services.meter_reading_service import MeterReadingService
 from repository.bill_repository import BillRepository
 from repository.billing_config_repository import BillingConfigRepository
 from utils.deps import get_db, require_roles
+from utils.errors import AppError
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
@@ -38,12 +39,8 @@ def create_reading(payload: MeterReadingCreate, db: Session = Depends(get_db)):
         billing_month=payload.billing_month,
         water_value=payload.water_value,
         electric_value=payload.electric_value,
-    )
-    try:
-        created = service.create_reading(reading)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return created
+        )
+    return service.create_reading(reading)
 
 
 @router.get(
@@ -74,17 +71,13 @@ def list_readings_by_year(room_id: int, year: int, db: Session = Depends(get_db)
 )
 def create_bill(payload: BillCreate, db: Session = Depends(get_db)):
     service = BillingService(db)
-    try:
-        bill = service.create_bill_for_month(
-            room_id=payload.room_id,
-            billing_month=payload.billing_month,
-            late_fee_applied=payload.late_fee_applied,
-            water_units_override=payload.water_units_override,
-            electric_units_override=payload.electric_units_override,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return bill
+    return service.create_bill_for_month(
+        room_id=payload.room_id,
+        billing_month=payload.billing_month,
+        late_fee_applied=payload.late_fee_applied,
+        water_units_override=payload.water_units_override,
+        electric_units_override=payload.electric_units_override,
+    )
 
 
 @router.post(
@@ -107,12 +100,12 @@ def create_bills_bulk(payload: BillBulkCreate, db: Session = Depends(get_db)):
                 electric_units_override=item.electric_units_override,
             )
             created.append(bill)
-        except ValueError as exc:
+        except AppError as exc:
             skipped.append(
                 {
                     "room_id": item.room_id,
                     "billing_month": item.billing_month,
-                    "reason": str(exc),
+                    "reason": exc.detail,
                 }
             )
     return {"created": created, "skipped": skipped}

@@ -12,6 +12,7 @@ type Room = {
   status: 'vacant' | 'occupied' | 'maintenance'
   current_resident_name?: string | null
   current_resident_phone?: string | null
+  has_related?: boolean | null
   is_my_room?: boolean
 }
 
@@ -134,10 +135,15 @@ const openView = (roomId: number) => {
   showView.value = true
 }
 
-const deleteRoom = async (roomId: number) => {
-  if (!confirm('Delete this room?')) return
+const deleteRoom = async (room: Room) => {
+  const hasRelated = Boolean(room.has_related)
+  const message = hasRelated
+    ? 'This room already has data (tenancies, documents, readings, or bills). Deleting it will remove all related records. Continue?'
+    : 'Delete this room?'
+  if (!confirm(message)) return
   try {
-    await apiClient.delete(`/rooms/${roomId}`)
+    const force = hasRelated ? '?force=true' : ''
+    await apiClient.delete(`/rooms/${room.id}${force}`)
     await loadRooms()
   } catch (err) {
     error.value = 'Failed to delete room.'
@@ -238,7 +244,7 @@ const submitUpload = async () => {
         :can-edit="isAdmin"
         :is-my-room="room.is_my_room"
         @edit="editRoom(room)"
-        @delete="deleteRoom(room.id)"
+        @delete="deleteRoom(room)"
         @assign="openAssign(room.id)"
         @upload="openUpload(room.id)"
         @view="openView(room.id)"

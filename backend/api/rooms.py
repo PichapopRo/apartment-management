@@ -7,8 +7,6 @@ from sqlalchemy.orm import Session
 from api.schemas.room import RoomCreate, RoomOut, RoomPublic, RoomUpdate
 from model.room_document import RoomDocumentType
 from model.user import UserRole
-from model.bill import Bill
-from model.meter_reading import MeterReading
 from model.room_document import RoomDocument
 from model.tenancy import Tenancy
 from repository.room_document_repository import RoomDocumentRepository
@@ -37,6 +35,7 @@ def list_rooms(db: Session = Depends(get_db)):
                 status=room.status,
                 current_resident_name=item["resident_name"],
                 current_resident_phone=item.get("resident_phone"),
+                has_related=item.get("has_related"),
             )
         )
     return response
@@ -113,21 +112,12 @@ def update_room(room_id: int, payload: RoomUpdate, db: Session = Depends(get_db)
 
 
 @router.delete("/{room_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_roles(UserRole.ADMIN))])
-def delete_room(room_id: int, db: Session = Depends(get_db)):
+def delete_room(room_id: int, force: bool = False, db: Session = Depends(get_db)):
     repo = RoomRepository(db)
     room = repo.get_by_id(room_id)
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
-    has_tenancy = db.query(Tenancy).filter(Tenancy.room_id == room_id).first()
-    has_docs = db.query(RoomDocument).filter(RoomDocument.room_id == room_id).first()
-    has_readings = db.query(MeterReading).filter(MeterReading.room_id == room_id).first()
-    has_bills = db.query(Bill).filter(Bill.room_id == room_id).first()
-    if has_tenancy or has_docs or has_readings or has_bills:
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot delete room with related records (tenancy, documents, readings, or bills)",
-        )
-    repo.delete(room)
+    RoomService(db).delete_room(room, force=force)
     return None
 
 

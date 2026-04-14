@@ -10,6 +10,7 @@ from repository.bill_repository import BillRepository
 from repository.billing_config_repository import BillingConfigRepository
 from repository.meter_reading_repository import MeterReadingRepository
 from repository.room_repository import RoomRepository
+from utils.errors import BadRequestError, ConflictError, NotFoundError
 
 
 @dataclass
@@ -58,7 +59,7 @@ class BillingService:
         )
 
         if water_units < 0 or electric_units < 0:
-            raise ValueError("Meter reading cannot be less than previous month")
+            raise BadRequestError("Meter reading cannot be less than previous month")
 
         water_amount = water_units * Decimal(water_rate)
         electric_amount = electric_units * Decimal(electric_rate)
@@ -88,14 +89,14 @@ class BillingService:
     ) -> Bill:
         room = self.rooms.get_by_id(room_id)
         if room is None:
-            raise ValueError("Room not found")
+            raise NotFoundError("Room not found")
 
         if self.bills.get_by_room_month(room_id, billing_month):
-            raise ValueError("Bill already exists for this month")
+            raise ConflictError("Bill already exists for this month")
 
         current = self.readings.get_by_room_month(room_id, billing_month)
         if current is None:
-            raise ValueError("Current month meter reading not found")
+            raise NotFoundError("Current month meter reading not found")
 
         # naive previous month key: YYYY-MM minus 1 month
         year, month = billing_month.split("-")

@@ -14,6 +14,7 @@ from api.rooms import router as rooms_router
 from api.tenancies import router as tenancies_router
 from database import Base, engine
 from utils.storage import ensure_upload_dir
+from utils.errors import AppError
 
 
 @asynccontextmanager
@@ -45,6 +46,13 @@ def create_app() -> FastAPI:
                 "errors": errors,
             },
         )
+
+    @app.exception_handler(AppError)
+    def app_error_handler(_, exc: AppError):
+        content = {"detail": exc.detail}
+        if exc.errors:
+            content["errors"] = exc.errors
+        return JSONResponse(status_code=exc.status_code, content=content)
 
     app.add_middleware(
         CORSMiddleware,

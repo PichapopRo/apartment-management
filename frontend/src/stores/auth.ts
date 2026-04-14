@@ -43,7 +43,7 @@ const register = async (payload: {
     email: payload.email,
     full_name: payload.full_name,
     password: payload.password,
-    role: 'resident' as const
+    role: payload.role ?? ('resident' as const)
   }
   try {
     await apiClient.post('/auth/register', body)
