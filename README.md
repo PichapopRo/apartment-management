@@ -90,5 +90,5 @@ Notes:
 - Meter readings: ![Meter](screenshots/meter.png)
 - Yearly meter view: ![Yearly Meter](screenshots/yearly-meter.png)
 - Rent calculation: ![Rent Calc](screenshots/rentcalc.png)
-- Bill status: ![Bill Status](screenshots/bill-status.png)
+- Bill status: ![Bill Status](screenshots/bill-status.png) 
 
