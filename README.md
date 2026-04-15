@@ -4,7 +4,7 @@
 A web-based apartment management system for managing rooms, tenancies, meter readings, billing, receipts, and reporting. It supports role-based access control, automated bill calculation, document uploads per room, and data export for accounting workflows.
 
 ## System Architecture Overview
-The system follows a hybrid layered + service-based architecture:
+The system follows a Layered Architecture:
 - **API Layer (FastAPI Routers)**: Request/response schemas, auth dependencies, role checks.
 - **Service Layer**: Business logic (billing calculation, receipts, tenancy rules, exports).
 - **Repository Layer**: Database access and queries (SQLAlchemy).
